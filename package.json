@@ -1,0 +1,5 @@
+{
+	"dependencies": {
+		"@seguros-bolivar/ui-bundle": "^1.0.5"
+	}
+}

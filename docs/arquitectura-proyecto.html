@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arquitectura del Proyecto SIOP — Seguros Bolívar</title>
+  <style>
+    @page { margin: 2cm; size: A4; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      color: #282828;
+      line-height: 1.6;
+      padding: 40px;
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+    }
+    .header {
+      background: linear-gradient(135deg, #009056, #05794A);
+      color: #fff;
+      padding: 32px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+    }
+    .header h1 { font-size: 28px; margin-bottom: 8px; }
+    .header p { font-size: 14px; opacity: 0.9; }
+    .header .meta { margin-top: 16px; font-size: 13px; opacity: 0.8; }
+    h2 {
+      color: #009056;
+      font-size: 20px;
+      margin: 28px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #E5F4EE;
+    }
+    h3 { color: #05794A; font-size: 16px; margin: 16px 0 8px; }
+    p, li { font-size: 14px; margin-bottom: 6px; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 13px;
+    }
+    th {
+      background: #E5F4EE;
+      color: #05794A;
+      text-align: left;
+      padding: 8px 12px;
+      font-weight: 600;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid #E1E1E1; }
+    tr:hover td { background: #FAFAFA; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge--green { background: #E5F4EE; color: #009056; }
+    .badge--yellow { background: #FFF8DC; color: #B8860B; }
+    .badge--blue { background: #E8F4FD; color: #007eff; }
+    .code-block {
+      background: #F5F5F5;
+      border: 1px solid #E1E1E1;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin: 12px 0;
+      white-space: pre;
+    }
+    .card {
+      border: 1px solid #E1E1E1;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
+      background: #FAFAFA;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .section-icon { margin-right: 8px; }
+    .footer {
+      margin-top: 40px;
+      padding-top: 16px;
+      border-top: 2px solid #E1E1E1;
+      font-size: 12px;
+      color: #5B5B5B;
+      text-align: center;
+    }
+    @media print {
+      body { padding: 0; }
+      .header { break-after: avoid; }
+      h2 { break-after: avoid; }
+      table { break-inside: avoid; }
+      .card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>📐 Proyecto SIOP — Definición de Arquitectura</h1>
+    <p>Documento de configuración técnica y lineamientos del proyecto</p>
+    <div class="meta">
+      <strong>Marca:</strong> Seguros Bolívar &nbsp;|&nbsp;
+      <strong>Tema:</strong> Light &nbsp;|&nbsp;
+      <strong>Fecha:</strong> Abril 2026 &nbsp;|&nbsp;
+      <strong>Versión:</strong> 1.0
+    </div>
+  </div>
+
+  <h2><span class="section-icon">🏗️</span>Stack Tecnológico</h2>
+  <table>
+    <thead>
+      <tr><th>Capa</th><th>Tecnología</th><th>Versión</th><th>Estado</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Frontend</td><td>Angular (Standalone)</td><td>19+ (LTS)</td><td><span class="badge badge--yellow">Pendiente inicializar</span></td></tr>
+      <tr><td>Design System</td><td>@seguros-bolivar/ui-bundle</td><td>^1.0.5</td><td><span class="badge badge--green">Instalado ✓</span></td></tr>
+      <tr><td>Backend</td><td>Node.js + Express.js</td><td>20.x / 4.x</td><td><span class="badge badge--yellow">Pendiente</span></td></tr>
+      <tr><td>Build Tool</td><td>npm</td><td>10.x</td><td><span class="badge badge--green">Configurado ✓</span></td></tr>
+      <tr><td>Persistencia</td><td>PostgreSQL</td><td>15.4+</td><td><span class="badge badge--yellow">Pendiente</span></td></tr>
+      <tr><td>Registry</td><td>JFrog Artifactory</td><td>-</td><td><span class="badge badge--green">Configurado ✓</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="section-icon">🎨</span>Design System — Seguros Bolívar UI</h2>
+  <div class="card">
+    <h3>Configuración del Tema</h3>
+    <table>
+      <tr><td><strong>Brand</strong></td><td><code>seguros-bolivar</code></td></tr>
+      <tr><td><strong>Theme</strong></td><td><code>light</code></td></tr>
+      <tr><td><strong>CSS</strong></td><td><code>sb-ui-seguros-bolivar-light.min.css</code></td></tr>
+      <tr><td><strong>JS (Web Components)</strong></td><td><code>sb-ui-components.min.js</code></td></tr>
+      <tr><td><strong>HTML root</strong></td><td><code>&lt;html data-brand="seguros-bolivar" data-theme="light"&gt;</code></td></tr>
+    </table>
+  </div>
+
+  <h3>Componentes CSS (BEM)</h3>
+  <div class="grid-2">
+    <div>
+      <ul>
+        <li><code>sb-ui-button</code> (primary, secondary, error, fill, ghost)</li>
+        <li><code>sb-ui-card</code> (header, body, footer)</li>
+        <li><code>sb-ui-input</code> (error, disabled)</li>
+        <li><code>sb-ui-alert</code> (success, error, warning, info)</li>
+        <li><code>sb-ui-badge</code></li>
+        <li><code>sb-ui-table</code></li>
+        <li><code>sb-ui-accordion</code></li>
+        <li><code>sb-ui-avatar</code></li>
+        <li><code>sb-ui-checkbox</code></li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li><code>sb-ui-chip</code></li>
+        <li><code>sb-ui-file-upload</code></li>
+        <li><code>sb-ui-menu</code></li>
+        <li><code>sb-ui-radio</code></li>
+        <li><code>sb-ui-select</code></li>
+        <li><code>sb-ui-spinner</code></li>
+        <li><code>sb-ui-tabs</code></li>
+        <li><code>sb-ui-tag</code></li>
+        <li><code>sb-ui-textarea</code> / <code>sb-ui-toggle</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Web Components</h3>
+  <table>
+    <thead><tr><th>Componente</th><th>Uso</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;sb-ui-datepicker&gt;</code></td><td>Selector de fecha</td></tr>
+      <tr><td><code>&lt;sb-ui-modal&gt;</code></td><td>Modal / diálogo</td></tr>
+      <tr><td><code>&lt;sb-ui-dropdown&gt;</code></td><td>Dropdown interactivo</td></tr>
+      <tr><td><code>&lt;sb-ui-toast&gt;</code></td><td>Notificaciones toast</td></tr>
+      <tr><td><code>&lt;sb-ui-stepper&gt;</code></td><td>Stepper / wizard</td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="section-icon">🎯</span>Tokens de Diseño</h2>
+  <table>
+    <thead><tr><th>Token</th><th>Valor</th><th>Uso</th></tr></thead>
+    <tbody>
+      <tr><td><code>--sb-ui-color-primary-base</code></td><td><span style="background:#009056;color:#fff;padding:2px 8px;border-radius:4px">#009056</span></td><td>Botones, links, header</td></tr>
+      <tr><td><code>--sb-ui-color-primary-D200</code></td><td><span style="background:#05794A;color:#fff;padding:2px 8px;border-radius:4px">#05794A</span></td><td>Hover states</td></tr>
+      <tr><td><code>--sb-ui-color-primary-L300</code></td><td><span style="background:#E5F4EE;padding:2px 8px;border-radius:4px">#E5F4EE</span></td><td>Fondos claros</td></tr>
+      <tr><td><code>--sb-ui-color-secondary-base</code></td><td><span style="background:#FFE16F;padding:2px 8px;border-radius:4px">#FFE16F</span></td><td>CTA, acentos</td></tr>
+      <tr><td><code>--sb-ui-color-feedback-error-base</code></td><td><span style="background:#dc3545;color:#fff;padding:2px 8px;border-radius:4px">#dc3545</span></td><td>Errores</td></tr>
+      <tr><td><code>--sb-ui-color-feedback-warning-base</code></td><td><span style="background:#ffc100;padding:2px 8px;border-radius:4px">#ffc100</span></td><td>Advertencias</td></tr>
+      <tr><td><code>--sb-ui-color-feedback-success-base</code></td><td><span style="background:#28a745;color:#fff;padding:2px 8px;border-radius:4px">#28a745</span></td><td>Éxito</td></tr>
+      <tr><td><code>--sb-ui-color-feedback-info-base</code></td><td><span style="background:#007eff;color:#fff;padding:2px 8px;border-radius:4px">#007eff</span></td><td>Información</td></tr>
+      <tr><td><code>--sb-ui-color-grayscale-D400</code></td><td><span style="background:#282828;color:#fff;padding:2px 8px;border-radius:4px">#282828</span></td><td>Texto principal</td></tr>
+      <tr><td><code>--sb-ui-color-grayscale-D200</code></td><td><span style="background:#5B5B5B;color:#fff;padding:2px 8px;border-radius:4px">#5B5B5B</span></td><td>Texto secundario</td></tr>
+      <tr><td><code>--sb-ui-color-grayscale-L200</code></td><td><span style="background:#E1E1E1;padding:2px 8px;border-radius:4px">#E1E1E1</span></td><td>Bordes, divisores</td></tr>
+      <tr><td><code>--sb-ui-color-grayscale-white</code></td><td><span style="background:#fff;border:1px solid #E1E1E1;padding:2px 8px;border-radius:4px">#FFFFFF</span></td><td>Fondos cards/modales</td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="section-icon">📁</span>Estructura del Proyecto (Angular)</h2>
+  <div class="code-block">frontend/src/app/
+├── core/                  # Singletons: services, guards, interceptors, models, config
+│   ├── config/            # microservices.config.ts (URLs centralizadas)
+│   ├── guards/            # auth.guard.ts (CanActivateFn)
+│   ├── interceptors/      # auth.interceptor.ts (HttpInterceptorFn)
+│   ├── models/            # Interfaces y modelos de datos
+│   └── services/          # Servicios inyectables (uno por dominio)
+├── features/              # Componentes por ruta agrupados por dominio
+│   ├── admin/
+│   ├── approvals/
+│   ├── auth/              # login, unauthorized
+│   ├── dashboard/
+│   ├── packages/
+│   └── shared-access/
+├── shared/                # Componentes reutilizables y estilos compartidos
+│   ├── components/
+│   └── styles/            # admin-layout.scss
+├── app.component.ts       # Shell raíz (&lt;router-outlet&gt;)
+├── app.config.ts          # Providers globales
+└── app.routes.ts          # Rutas con lazy loading</div>
+
+  <h2><span class="section-icon">⚙️</span>Configuración Angular</h2>
+
+  <h3>angular.json (styles & scripts)</h3>
+  <div class="code-block">{
+  "styles": [
+    "node_modules/@seguros-bolivar/ui-bundle/dist/sb-ui-seguros-bolivar-light.min.css",
+    "src/styles.scss"
+  ],
+  "scripts": [
+    "node_modules/@seguros-bolivar/ui-bundle/dist/sb-ui-components.min.js"
+  ]
+}</div>
+
+  <h3>index.html</h3>
+  <div class="code-block">&lt;html lang="es" data-brand="seguros-bolivar" data-theme="light"&gt;</div>
+
+  <h3>Web Components en Angular</h3>
+  <div class="code-block">@Component({
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],  // Requerido para &lt;sb-ui-*&gt;
+})</div>
+
+  <h2><span class="section-icon">🏛️</span>Reglas de Arquitectura</h2>
+
+  <div class="card">
+    <h3>Arquitectura de 3 Capas</h3>
+    <table>
+      <tr><td><strong>Presentación</strong></td><td>Solo renderizado UI y eventos. NUNCA lógica de negocio.</td></tr>
+      <tr><td><strong>Lógica</strong></td><td>Reglas de dominio, cálculos, validaciones de seguridad.</td></tr>
+      <tr><td><strong>Persistencia</strong></td><td>Repositorios oficiales. Siempre vía API, nunca conexión directa desde Front.</td></tr>
+    </table>
+  </div>
+
+  <h3>Seguridad</h3>
+  <ul>
+    <li>OAuth 2.0 + OIDC obligatorio</li>
+    <li>JWT firmados para comunicación entre capas</li>
+    <li>RBAC validado en Backend (no permisos hardcodeados)</li>
+    <li>Tokens en <code>httpOnly cookies</code>, nunca en <code>localStorage</code></li>
+    <li>Datos sensibles enmascarados al 100% en respuestas API</li>
+    <li>Secretos en Variables de Entorno o Secret Manager</li>
+    <li>Comunicación solo por DNS, prohibido IPs fijas</li>
+  </ul>
+
+  <h3>Resiliencia y Desempeño</h3>
+  <ul>
+    <li>Frontend: respuesta &lt; 3 segundos</li>
+    <li>Backend APIs: procesamiento &lt; 15 segundos</li>
+    <li><code>Correlation-ID</code> obligatorio en cada petición</li>
+    <li>Retries + Circuit Breakers para el 100% de errores</li>
+    <li>Rate Limiting para proteger componentes core</li>
+    <li>Versionamiento de APIs: <code>/v1/api/</code>, <code>/v2/api/</code></li>
+  </ul>
+
+  <h2><span class="section-icon">🚫</span>Patrones Prohibidos</h2>
+  <ul>
+    <li>Importar <code>HttpClientModule</code> en componentes (rompe interceptors)</li>
+    <li>Hardcodear colores/sombras/fuentes en vez de usar tokens <code>--sb-ui-*</code></li>
+    <li><code>overflow: hidden</code> en contenedores admin</li>
+    <li>Usar colores de Tailwind, Material o Bootstrap</li>
+    <li>Crear NgModules (solo standalone components)</li>
+    <li>Lógica de negocio en el Frontend</li>
+    <li>Conexión directa a BD desde el Front</li>
+    <li>API keys o credenciales en código fuente</li>
+    <li>Tokens en <code>localStorage</code></li>
+  </ul>
+
+  <h2><span class="section-icon">📋</span>Archivos Configurados</h2>
+  <table>
+    <thead><tr><th>Archivo</th><th>Propósito</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td><code>.npmrc</code></td><td>Registry JFrog para @seguros-bolivar</td><td><span class="badge badge--green">✓</span></td></tr>
+      <tr><td><code>.gitignore</code></td><td>Excluye node_modules, .env, .DS_Store</td><td><span class="badge badge--green">✓</span></td></tr>
+      <tr><td><code>package.json</code></td><td>Dependencia ui-bundle instalada</td><td><span class="badge badge--green">✓</span></td></tr>
+      <tr><td><code>.kiro/steering/frontend-rules.md</code></td><td>Reglas Angular + Design System + tema seguros-bolivar</td><td><span class="badge badge--green">✓</span></td></tr>
+      <tr><td><code>.kiro/steering/reglas-arquitectura-soluciones.md</code></td><td>Arquitectura 3 capas, seguridad, resiliencia</td><td><span class="badge badge--green">✓</span></td></tr>
+      <tr><td><code>.kiro/steering/stack-seguros-bolivar.md</code></td><td>Stack tecnológico completo</td><td><span class="badge badge--green">✓</span></td></tr>
+      <tr><td><code>JFROG_AUTH_TOKEN</code></td><td>Variable de entorno en ~/.zshrc</td><td><span class="badge badge--green">✓</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="section-icon">🔜</span>Próximos Pasos</h2>
+  <table>
+    <thead><tr><th>#</th><th>Tarea</th><th>Prioridad</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Inicializar proyecto Angular 19+ con <code>ng new</code></td><td><span class="badge badge--green">Alta</span></td></tr>
+      <tr><td>2</td><td>Configurar <code>angular.json</code> con CSS/JS del bundle</td><td><span class="badge badge--green">Alta</span></td></tr>
+      <tr><td>3</td><td>Configurar <code>index.html</code> con <code>data-brand</code> y <code>data-theme</code></td><td><span class="badge badge--green">Alta</span></td></tr>
+      <tr><td>4</td><td>Crear estructura de carpetas (core, features, shared)</td><td><span class="badge badge--green">Alta</span></td></tr>
+      <tr><td>5</td><td>Configurar auth interceptor + guards</td><td><span class="badge badge--yellow">Media</span></td></tr>
+      <tr><td>6</td><td>Inicializar backend Node.js + Express</td><td><span class="badge badge--yellow">Media</span></td></tr>
+      <tr><td>7</td><td>Configurar Docker + Docker Compose</td><td><span class="badge badge--blue">Baja</span></td></tr>
+      <tr><td>8</td><td>Configurar CI/CD con GitHub Actions</td><td><span class="badge badge--blue">Baja</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <p>Proyecto SIOP — Seguros Bolívar | Generado: Abril 2026 | Repositorio: github.com/nmarcelomel/SIOP</p>
+  </div>
+
+</body>
+</html>
