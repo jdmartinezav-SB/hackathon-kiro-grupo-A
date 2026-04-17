@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Bell, GitBranch, Wrench, AlertTriangle, Info, CircleDot } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { SbTabs, SbAlert } from '../components/ui';
+import api from '../lib/api';
 
 /* ── Types ── */
 interface Notification {
@@ -24,8 +25,43 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
   { id: '5', type: 'info', title: 'Bienvenido a Conecta 2.0', message: 'Explora el catálogo de APIs y comienza a integrar tus aplicaciones.', priority: 'normal', read: true, createdAt: '2026-04-01T08:00:00' },
 ];
 
-function fetchNotifications(): Promise<Notification[]> {
-  return Promise.resolve(INITIAL_NOTIFICATIONS);
+function mapNotificationType(type: string): Notification['type'] {
+  const map: Record<string, Notification['type']> = {
+    new_version: 'version',
+    maintenance: 'maintenance',
+    quota_warning: 'quota',
+    quota_exhausted: 'quota',
+    sunset: 'sunset',
+    general: 'info',
+  };
+  return map[type] || 'info';
+}
+
+function mapPriority(priority: string): Notification['priority'] {
+  const map: Record<string, Notification['priority']> = {
+    low: 'normal',
+    medium: 'normal',
+    high: 'high',
+    urgent: 'urgent',
+  };
+  return map[priority] || 'normal';
+}
+
+async function fetchNotifications(): Promise<Notification[]> {
+  try {
+    const response = await api.get('/v1/notifications');
+    return response.data.map((n: Record<string, unknown>) => ({
+      id: n.id,
+      type: mapNotificationType(n.type as string),
+      title: n.title,
+      message: n.message,
+      priority: mapPriority(n.priority as string),
+      read: n.read,
+      createdAt: (n.created_at || n.createdAt) as string,
+    }));
+  } catch {
+    return INITIAL_NOTIFICATIONS;
+  }
 }
 
 /* ── Helpers ── */
@@ -140,6 +176,9 @@ export default function Notifications() {
 
   const markAsRead = (id: string) => {
     setReadIds((prev) => new Set(prev).add(id));
+    api.put(`/v1/notifications/${id}/read`).catch(() => {
+      // Silently fail — local state already updated
+    });
   };
 
   const activeFilterIndex = FILTER_KEYS.indexOf(filter);

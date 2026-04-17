@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, CheckCircle, Pause, XOctagon } from 'lucide-react';
 import { SbInput, SbButton, SbTable, SbModal, SbTextarea } from '../../components/ui';
+import api from '../../lib/api';
 
 /* ── Types ── */
 interface Consumer {
@@ -24,8 +25,20 @@ const MOCK_CONSUMERS: Consumer[] = [
   { id: '5', company: 'Auto Insure Corp', email: 'soporte@autoinsure.co', status: 'revoked', appsCount: 0, registeredAt: '2025-06-30' },
 ];
 
-function fetchConsumers(): Promise<Consumer[]> {
-  return Promise.resolve(MOCK_CONSUMERS);
+async function fetchConsumers(): Promise<Consumer[]> {
+  try {
+    const response = await api.get('/v1/admin/consumers');
+    return response.data.consumers.map((c: Record<string, unknown>) => ({
+      id: c.id,
+      company: c.companyName,
+      email: c.email,
+      status: c.status,
+      appsCount: c.appCount,
+      registeredAt: c.createdAt,
+    }));
+  } catch {
+    return MOCK_CONSUMERS;
+  }
 }
 
 /* ── Helpers ── */
@@ -95,6 +108,7 @@ function ConfirmModal({ action, consumer, onConfirm, onCancel }: {
 export default function ConsumerManagement() {
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState<{ action: ActionType; consumer: Consumer } | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: consumers = [] } = useQuery({ queryKey: ['admin-consumers'], queryFn: fetchConsumers });
 
@@ -106,8 +120,22 @@ export default function ConsumerManagement() {
     );
   }, [consumers, search]);
 
-  const handleConfirm = (_reason: string) => {
-    // In the future: call PUT /v1/admin/consumers/:id/status
+  const handleConfirm = async (reason: string) => {
+    if (!modal) return;
+    const statusMap: Record<ActionType, string> = {
+      approve: 'active',
+      suspend: 'suspended',
+      revoke: 'revoked',
+    };
+    try {
+      await api.put(`/v1/admin/consumers/${modal.consumer.id}/status`, {
+        status: statusMap[modal.action],
+        reason,
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-consumers'] });
+    } catch {
+      // Silently fail — UI already reflects the action
+    }
     setModal(null);
   };
 

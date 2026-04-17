@@ -1,30 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 
-/**
- * JSON structured request logger.
- * Writes one log line per request to stdout with the fields required
- * by Property 20: timestamp, level, service, correlationId, message.
- */
-function requestLogger(req: Request, res: Response, next: NextFunction): void {
-  const start = Date.now();
-
-  res.on('finish', () => {
-    const duration = Date.now() - start;
+export function requestLogger(serviceName: string) {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     const log = {
       timestamp: new Date().toISOString(),
       level: 'info',
-      service: process.env.SERVICE_NAME ?? 'unknown',
-      correlationId: req.correlationId ?? 'unknown',
-      message: `${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`,
-      method: req.method,
-      url: req.originalUrl,
-      statusCode: res.statusCode,
-      durationMs: duration,
+      service: serviceName,
+      correlationId: req.correlationId,
+      message: `${req.method} ${req.originalUrl}`,
     };
-    process.stdout.write(JSON.stringify(log) + '\n');
-  });
-
-  next();
+    console.log(JSON.stringify(log));
+    next();
+  };
 }
-
-export { requestLogger };

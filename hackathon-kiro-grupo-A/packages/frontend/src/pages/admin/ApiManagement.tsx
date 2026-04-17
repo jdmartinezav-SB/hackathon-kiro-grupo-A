@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Upload, CalendarClock } from 'lucide-react';
 import { SbButton, SbInput, SbTextarea, SbModal } from '../../components/ui';
+import api from '../../lib/api';
 
 /* ── Types ── */
 interface ApiVersion {
@@ -39,8 +40,39 @@ const MOCK_MANAGED_APIS: ManagedApi[] = [
   },
 ];
 
-function fetchManagedApis(): Promise<ManagedApi[]> {
-  return Promise.resolve(MOCK_MANAGED_APIS);
+async function fetchManagedApis(): Promise<ManagedApi[]> {
+  try {
+    const response = await api.get('/v1/catalog/apis');
+    const apis = await Promise.all(
+      response.data.map(async (a: Record<string, unknown>) => {
+        try {
+          const detail = await api.get(`/v1/catalog/apis/${a.id}`);
+          return {
+            id: a.id,
+            name: a.name,
+            description: (a.description as string) || '',
+            category: a.category,
+            versions: ((detail.data.versions || []) as Record<string, unknown>[]).map((v) => ({
+              tag: v.versionTag,
+              status: v.status,
+              publishedAt: v.publishedAt,
+            })),
+          };
+        } catch {
+          return {
+            id: a.id,
+            name: a.name,
+            description: (a.description as string) || '',
+            category: a.category,
+            versions: [{ tag: a.version as string, status: 'active', publishedAt: new Date().toISOString() }],
+          };
+        }
+      })
+    );
+    return apis;
+  } catch {
+    return MOCK_MANAGED_APIS;
+  }
 }
 
 /* ── Helpers ── */

@@ -4,12 +4,12 @@ dotenv.config();
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { correlationIdMiddleware } from './middleware/correlation-id.js';
-import { errorHandler } from './middleware/error-handler.js';
-import auditRoutes from './routes/audit.routes.js';
-import analyticsRoutes from './routes/analytics.routes.js';
-import notificationRoutes from './routes/notification.routes.js';
-import pool from './config/database.js';
+import { correlationIdMiddleware } from './middleware/correlation-id';
+import { errorHandler } from './middleware/error-handler';
+import auditRoutes from './routes/audit.routes';
+import analyticsRoutes from './routes/analytics.routes';
+import notificationRoutes from './routes/notification.routes';
+import pool from './config/database';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3004', 10);

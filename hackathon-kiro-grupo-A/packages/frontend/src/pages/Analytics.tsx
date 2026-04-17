@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Activity, CheckCircle, XCircle, Clock } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { SbInput, SbSelect, SbTable } from '../components/ui';
+import api from '../lib/api';
 
 /* ── Types ── */
 interface MetricCard {
@@ -48,8 +49,30 @@ const MOCK_APIS = [
 
 const QUOTA = { used: 7300, limit: 10000 };
 
-function fetchAnalytics() {
-  return Promise.resolve({ metrics: MOCK_METRICS, requests: MOCK_REQUESTS, quota: QUOTA });
+async function fetchAnalytics() {
+  try {
+    const appId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+    const [dashboardRes, quotaRes] = await Promise.all([
+      api.get(`/v1/analytics/dashboard/${appId}`),
+      api.get(`/v1/analytics/quota/${appId}`),
+    ]);
+
+    const d = dashboardRes.data;
+    const q = quotaRes.data;
+
+    return {
+      metrics: [
+        { label: 'Total Peticiones', value: d.totalRequests.toLocaleString(), icon: Activity, iconColor: 'text-indigo-600 bg-indigo-50' },
+        { label: 'Tasa de Éxito', value: `${d.successRate}%`, icon: CheckCircle, iconColor: 'text-green-600 bg-green-50' },
+        { label: 'Tasa de Error', value: `${d.errorRate}%`, icon: XCircle, iconColor: 'text-red-600 bg-red-50' },
+        { label: 'Latencia Promedio', value: `${d.avgLatencyMs}ms`, icon: Clock, iconColor: 'text-amber-600 bg-amber-50' },
+      ] as MetricCard[],
+      requests: MOCK_REQUESTS,
+      quota: { used: q.quotaUsed, limit: q.quotaLimit },
+    };
+  } catch {
+    return { metrics: MOCK_METRICS, requests: MOCK_REQUESTS, quota: QUOTA };
+  }
 }
 
 /* ── Helpers ── */

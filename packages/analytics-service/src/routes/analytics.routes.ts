@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { authMiddleware } from '../middleware/auth.js';
-import { AppError } from '../middleware/error-handler.js';
-import pool from '../config/database.js';
+import { authMiddleware } from '../middleware/auth';
+import { AppError } from '../middleware/error-handler';
+import pool from '../config/database';
 
 const router = Router();
 
