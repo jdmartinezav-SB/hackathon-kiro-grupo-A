@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Upload, CalendarClock, X } from 'lucide-react';
+import { Plus, Upload, CalendarClock } from 'lucide-react';
+import { SbButton, SbInput, SbTextarea, SbModal } from '../../components/ui';
 
 /* ── Types ── */
 interface ApiVersion {
@@ -55,23 +56,6 @@ function minSunsetDate(): string {
   return d.toISOString().split('T')[0] ?? '';
 }
 
-/* ── Modal wrapper ── */
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100" aria-label="Cerrar">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
 /* ── Main component ── */
 export default function ApiManagement() {
   const [modal, setModal] = useState<{ type: ModalType; apiId?: string } | null>(null);
@@ -96,13 +80,13 @@ export default function ApiManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Gestión de APIs</h1>
-        <button
-          type="button"
+        <SbButton
+          variant="primary"
+          styleType="fill"
           onClick={() => setModal({ type: 'new-api' })}
-          className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
         >
           <Plus className="h-4 w-4" /> Nueva API
-        </button>
+        </SbButton>
       </div>
 
       {/* API list */}
@@ -135,92 +119,153 @@ export default function ApiManagement() {
 
             {/* Actions */}
             <div className="flex gap-2">
-              <button
-                type="button"
+              <SbButton
+                variant="secondary"
+                styleType="stroke"
+                size="small"
                 onClick={() => setModal({ type: 'publish-version', apiId: api.id })}
-                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
               >
                 <Upload className="h-3.5 w-3.5" /> Publicar Versión
-              </button>
-              <button
-                type="button"
+              </SbButton>
+              <SbButton
+                variant="secondary"
+                styleType="stroke"
+                size="small"
                 onClick={() => setModal({ type: 'sunset-plan', apiId: api.id })}
-                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
               >
                 <CalendarClock className="h-3.5 w-3.5" /> Plan Sunset
-              </button>
+              </SbButton>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Modals */}
+      {/* Modal: Nueva API */}
       {modal?.type === 'new-api' && (
-        <Modal title="Nueva API" onClose={closeModal}>
+        <SbModal open title="Nueva API" onClose={closeModal}>
           <div className="space-y-3">
             <div>
               <label htmlFor="api-name" className="mb-1 block text-sm font-medium text-gray-700">Nombre</label>
-              <input id="api-name" type="text" value={newApiName} onChange={(e) => setNewApiName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="Nombre de la API" />
+              <SbInput
+                id="api-name"
+                type="text"
+                value={newApiName}
+                onChange={(val) => setNewApiName(val)}
+                placeholder="Nombre de la API"
+              />
             </div>
             <div>
               <label htmlFor="api-desc" className="mb-1 block text-sm font-medium text-gray-700">Descripción</label>
-              <input id="api-desc" type="text" value={newApiDesc} onChange={(e) => setNewApiDesc(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="Descripción breve" />
+              <SbInput
+                id="api-desc"
+                type="text"
+                value={newApiDesc}
+                onChange={(val) => setNewApiDesc(val)}
+                placeholder="Descripción breve"
+              />
             </div>
             <div>
               <label htmlFor="api-cat" className="mb-1 block text-sm font-medium text-gray-700">Categoría</label>
-              <input id="api-cat" type="text" value={newApiCategory} onChange={(e) => setNewApiCategory(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="Ej: Autos, Salud, General" />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={closeModal} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</button>
-              <button type="button" onClick={closeModal} disabled={!newApiName.trim()} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">Crear</button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {modal?.type === 'publish-version' && (
-        <Modal title="Publicar Versión" onClose={closeModal}>
-          <div className="space-y-3">
-            <div>
-              <label htmlFor="spec-text" className="mb-1 block text-sm font-medium text-gray-700">OpenAPI Spec (YAML/JSON)</label>
-              <textarea
-                id="spec-text"
-                rows={10}
-                value={specText}
-                onChange={(e) => setSpecText(e.target.value)}
-                placeholder="Pega aquí la especificación OpenAPI…"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-xs outline-none focus:border-indigo-500"
+              <SbInput
+                id="api-cat"
+                type="text"
+                value={newApiCategory}
+                onChange={(val) => setNewApiCategory(val)}
+                placeholder="Ej: Autos, Salud, General"
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={closeModal} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</button>
-              <button type="button" onClick={closeModal} disabled={!specText.trim()} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">Publicar</button>
+              <SbButton
+                variant="secondary"
+                styleType="stroke"
+                onClick={() => closeModal()}
+              >
+                Cancelar
+              </SbButton>
+              <SbButton
+                variant="primary"
+                styleType="fill"
+                onClick={() => closeModal()}
+                disabled={!newApiName.trim()}
+              >
+                Crear
+              </SbButton>
             </div>
           </div>
-        </Modal>
+        </SbModal>
       )}
 
+      {/* Modal: Publicar Versión */}
+      {modal?.type === 'publish-version' && (
+        <SbModal open title="Publicar Versión" onClose={closeModal}>
+          <div className="space-y-3">
+            <div>
+              <label htmlFor="spec-text" className="mb-1 block text-sm font-medium text-gray-700">OpenAPI Spec (YAML/JSON)</label>
+              <SbTextarea
+                value={specText}
+                onChange={(val) => setSpecText(val)}
+                placeholder="Pega aquí la especificación OpenAPI…"
+                rows={10}
+                data-testid="spec-text"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <SbButton
+                variant="secondary"
+                styleType="stroke"
+                onClick={() => closeModal()}
+              >
+                Cancelar
+              </SbButton>
+              <SbButton
+                variant="primary"
+                styleType="fill"
+                onClick={() => closeModal()}
+                disabled={!specText.trim()}
+              >
+                Publicar
+              </SbButton>
+            </div>
+          </div>
+        </SbModal>
+      )}
+
+      {/* Modal: Plan Sunset */}
       {modal?.type === 'sunset-plan' && (
-        <Modal title="Plan Sunset" onClose={closeModal}>
+        <SbModal open title="Plan Sunset" onClose={closeModal}>
           <div className="space-y-3">
             <p className="text-sm text-gray-500">La fecha de sunset debe ser al menos 90 días a partir de hoy.</p>
             <div>
               <label htmlFor="sunset-date" className="mb-1 block text-sm font-medium text-gray-700">Fecha de Sunset</label>
-              <input
+              <SbInput
                 id="sunset-date"
                 type="date"
-                min={minSunsetDate()}
                 value={sunsetDate}
-                onChange={(e) => setSunsetDate(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                onChange={(val) => {
+                  /* Enforce min sunset date (90 days from today) */
+                  if (val >= minSunsetDate()) setSunsetDate(val);
+                }}
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={closeModal} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</button>
-              <button type="button" onClick={closeModal} disabled={!sunsetDate} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">Programar</button>
+              <SbButton
+                variant="secondary"
+                styleType="stroke"
+                onClick={() => closeModal()}
+              >
+                Cancelar
+              </SbButton>
+              <SbButton
+                variant="primary"
+                styleType="fill"
+                onClick={() => closeModal()}
+                disabled={!sunsetDate}
+              >
+                Programar
+              </SbButton>
             </div>
           </div>
-        </Modal>
+        </SbModal>
       )}
     </div>
   );

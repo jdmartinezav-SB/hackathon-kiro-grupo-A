@@ -49,7 +49,10 @@ export default function AppLayout() {
         }`}
       >
         <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-6">
-          <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+          <div
+            className="h-8 w-8 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: 'var(--sb-ui-color-primary-base)' }}
+          >
             <span className="text-sm font-bold text-white">C2</span>
           </div>
           <span className="text-lg font-bold text-gray-900">Conecta 2.0</span>
@@ -73,9 +76,17 @@ export default function AppLayout() {
                   className={({ isActive }) =>
                     `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-indigo-50 text-indigo-700'
+                        ? ''
                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                     }`
+                  }
+                  style={({ isActive }) =>
+                    isActive
+                      ? {
+                          backgroundColor: 'var(--sb-ui-color-primary-L400)',
+                          color: 'var(--sb-ui-color-primary-D100)',
+                        }
+                      : undefined
                   }
                 >
                   <item.icon className="h-5 w-5 shrink-0" />

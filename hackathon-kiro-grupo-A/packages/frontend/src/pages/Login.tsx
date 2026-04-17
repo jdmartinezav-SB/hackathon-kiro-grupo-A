@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
+import { SbInput, SbButton } from '../components/ui';
 
 const loginSchema = z.object({
   email: z.string().email('Correo electrónico inválido'),
@@ -18,12 +19,12 @@ export default function Login() {
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginForm>({
+  const { control, handleSubmit } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
   });
 
   const onSubmit = async (data: LoginForm) => {
@@ -47,68 +48,65 @@ export default function Login() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Email */}
-        <div>
-          <label
-            htmlFor="email"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
-            Correo electrónico
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            {...register('email')}
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 ${
-              errors.email ? 'border-red-400' : 'border-gray-300'
-            }`}
-            placeholder="tu@empresa.com"
-          />
-          {errors.email && (
-            <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+        <Controller
+          name="email"
+          control={control}
+          render={({ field, fieldState }) => (
+            <SbInput
+              type="email"
+              label="Correo electrónico"
+              placeholder="tu@empresa.com"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+              autoComplete="email"
+              id="email"
+              data-testid="login-email"
+            />
           )}
-        </div>
+        />
 
         {/* Password */}
-        <div>
-          <label
-            htmlFor="password"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
-            Contraseña
-          </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            {...register('password')}
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 ${
-              errors.password ? 'border-red-400' : 'border-gray-300'
-            }`}
-            placeholder="••••••••"
-          />
-          {errors.password && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.password.message}
-            </p>
+        <Controller
+          name="password"
+          control={control}
+          render={({ field, fieldState }) => (
+            <SbInput
+              type="password"
+              label="Contraseña"
+              placeholder="••••••••"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+              autoComplete="current-password"
+              id="password"
+              data-testid="login-password"
+            />
           )}
-        </div>
+        />
 
         {/* Submit */}
-        <button
+        <SbButton
+          variant="primary"
+          styleType="fill"
           type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+          loading={loading}
+          className="w-full"
+          data-testid="login-submit"
         >
           {loading ? 'Ingresando…' : 'Ingresar'}
-        </button>
+        </SbButton>
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
         ¿No tienes cuenta?{' '}
         <Link
           to="/register"
-          className="font-medium text-indigo-600 hover:text-indigo-500"
+          className="font-medium text-[var(--sb-ui-color-primary-base)] hover:text-[var(--sb-ui-color-primary-D100)]"
         >
           Regístrate
         </Link>

@@ -15,11 +15,12 @@ describe('Sandbox Page', () => {
       screen.getByRole('heading', { name: /sandbox/i }),
     ).toBeInTheDocument();
 
-    expect(screen.getByLabelText(/^api$/i)).toBeInTheDocument();
+    // After migration to Web Components, the label can't be associated
+    // with the custom element in jsdom. Use data-testid instead.
+    expect(screen.getByTestId('sandbox-api-select')).toBeInTheDocument();
 
-    expect(
-      screen.getByRole('button', { name: /ejecutar/i }),
-    ).toBeInTheDocument();
+    // The execute button is now an sb-ui-button; query by text content
+    expect(screen.getByText(/ejecutar/i)).toBeInTheDocument();
 
     expect(
       screen.getByText(/ejecuta una petición para ver la respuesta/i),

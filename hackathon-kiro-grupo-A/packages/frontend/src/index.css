@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+/* Tokens corporativos Seguros Bolívar — complementan los estilos CDN */
+@layer base {
+  [data-brand="seguros-bolivar"] {
+    --sb-ui-color-primary-base: #009056;
+    --sb-ui-color-primary-D100: #038450;
+    --sb-ui-color-primary-L400: #F2F9F6;
+  }
+}

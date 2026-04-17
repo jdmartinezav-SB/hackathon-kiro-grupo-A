@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
+import { SbInput, SbSelect, SbButton } from '../components/ui';
 
 const BUSINESS_PROFILES = [
   { value: 'Salud', label: 'Salud' },
@@ -35,12 +36,16 @@ export default function Register() {
   const { register: registerUser } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterForm>({
+  const { control, handleSubmit } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+      companyName: '',
+      businessProfile: '',
+      contactName: '',
+    },
   });
 
   const onSubmit = async (data: RegisterForm) => {
@@ -70,170 +75,150 @@ export default function Register() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Email */}
-        <div>
-          <label
-            htmlFor="reg-email"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
-            Correo electrónico
-          </label>
-          <input
-            id="reg-email"
-            type="email"
-            autoComplete="email"
-            {...register('email')}
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 ${
-              errors.email ? 'border-red-400' : 'border-gray-300'
-            }`}
-            placeholder="tu@empresa.com"
-          />
-          {errors.email && (
-            <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+        <Controller
+          name="email"
+          control={control}
+          render={({ field, fieldState }) => (
+            <SbInput
+              type="email"
+              label="Correo electrónico"
+              placeholder="tu@empresa.com"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+              autoComplete="email"
+              id="reg-email"
+              name="email"
+            />
           )}
-        </div>
+        />
 
         {/* Password */}
-        <div>
-          <label
-            htmlFor="reg-password"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
-            Contraseña
-          </label>
-          <input
-            id="reg-password"
-            type="password"
-            autoComplete="new-password"
-            {...register('password')}
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 ${
-              errors.password ? 'border-red-400' : 'border-gray-300'
-            }`}
-            placeholder="Mínimo 8 caracteres"
-          />
-          {errors.password && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.password.message}
-            </p>
+        <Controller
+          name="password"
+          control={control}
+          render={({ field, fieldState }) => (
+            <SbInput
+              type="password"
+              label="Contraseña"
+              placeholder="Mínimo 8 caracteres"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+              autoComplete="new-password"
+              id="reg-password"
+              name="password"
+            />
           )}
-        </div>
+        />
 
         {/* Confirm Password */}
-        <div>
-          <label
-            htmlFor="reg-confirm"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
-            Confirmar contraseña
-          </label>
-          <input
-            id="reg-confirm"
-            type="password"
-            autoComplete="new-password"
-            {...register('confirmPassword')}
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 ${
-              errors.confirmPassword ? 'border-red-400' : 'border-gray-300'
-            }`}
-            placeholder="Repite tu contraseña"
-          />
-          {errors.confirmPassword && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.confirmPassword.message}
-            </p>
+        <Controller
+          name="confirmPassword"
+          control={control}
+          render={({ field, fieldState }) => (
+            <SbInput
+              type="password"
+              label="Confirmar contraseña"
+              placeholder="Repite tu contraseña"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+              autoComplete="new-password"
+              id="reg-confirm"
+              name="confirmPassword"
+            />
           )}
-        </div>
+        />
 
         {/* Company Name */}
-        <div>
-          <label
-            htmlFor="reg-company"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
-            Nombre de la empresa
-          </label>
-          <input
-            id="reg-company"
-            type="text"
-            {...register('companyName')}
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 ${
-              errors.companyName ? 'border-red-400' : 'border-gray-300'
-            }`}
-            placeholder="Mi Empresa S.A."
-          />
-          {errors.companyName && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.companyName.message}
-            </p>
+        <Controller
+          name="companyName"
+          control={control}
+          render={({ field, fieldState }) => (
+            <SbInput
+              type="text"
+              label="Nombre de la empresa"
+              placeholder="Mi Empresa S.A."
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+              id="reg-company"
+              name="companyName"
+            />
           )}
-        </div>
+        />
 
         {/* Business Profile */}
-        <div>
-          <label
-            htmlFor="reg-profile"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
-            Perfil de negocio
-          </label>
-          <select
-            id="reg-profile"
-            {...register('businessProfile')}
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 ${
-              errors.businessProfile ? 'border-red-400' : 'border-gray-300'
-            }`}
-          >
-            <option value="">Selecciona un perfil</option>
-            {BUSINESS_PROFILES.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-          {errors.businessProfile && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.businessProfile.message}
-            </p>
+        <Controller
+          name="businessProfile"
+          control={control}
+          render={({ field, fieldState }) => (
+            <SbSelect
+              label="Perfil de negocio"
+              placeholder="Selecciona un perfil"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+              name="businessProfile"
+            >
+              <option value="">Selecciona un perfil</option>
+              {BUSINESS_PROFILES.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </SbSelect>
           )}
-        </div>
+        />
 
         {/* Contact Name */}
-        <div>
-          <label
-            htmlFor="reg-contact"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
-            Nombre de contacto
-          </label>
-          <input
-            id="reg-contact"
-            type="text"
-            {...register('contactName')}
-            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 ${
-              errors.contactName ? 'border-red-400' : 'border-gray-300'
-            }`}
-            placeholder="Juan Pérez"
-          />
-          {errors.contactName && (
-            <p className="mt-1 text-xs text-red-500">
-              {errors.contactName.message}
-            </p>
+        <Controller
+          name="contactName"
+          control={control}
+          render={({ field, fieldState }) => (
+            <SbInput
+              type="text"
+              label="Nombre de contacto"
+              placeholder="Juan Pérez"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={!!fieldState.error}
+              errorMessage={fieldState.error?.message}
+              id="reg-contact"
+              name="contactName"
+            />
           )}
-        </div>
+        />
 
         {/* Submit */}
-        <button
+        <SbButton
+          variant="primary"
+          styleType="fill"
           type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+          loading={loading}
+          className="w-full"
         >
           {loading ? 'Registrando…' : 'Crear cuenta'}
-        </button>
+        </SbButton>
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
         ¿Ya tienes cuenta?{' '}
         <Link
           to="/login"
-          className="font-medium text-indigo-600 hover:text-indigo-500"
+          className="font-medium text-[var(--sb-ui-color-primary-base)] hover:text-[var(--sb-ui-color-primary-D100)]"
         >
           Inicia sesión
         </Link>

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Play, Trash2, Plus, Clock, ChevronDown, ChevronRight } from 'lucide-react';
+import { SbSelect, SbInput, SbTextarea, SbButton, SbSpinner } from '../components/ui';
 
 /* ── Types ── */
 interface Header {
@@ -53,19 +54,17 @@ function statusColor(code: number): string {
 function HeaderRow({ header, onChange, onRemove }: { header: Header; onChange: (h: Header) => void; onRemove: () => void }) {
   return (
     <div className="flex gap-2">
-      <input
-        type="text"
+      <SbInput
         placeholder="Key"
         value={header.key}
-        onChange={(e) => onChange({ ...header, key: e.target.value })}
-        className="flex-1 rounded-lg border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-indigo-500"
+        onChange={(val) => onChange({ ...header, key: val })}
+        className="flex-1"
       />
-      <input
-        type="text"
+      <SbInput
         placeholder="Value"
         value={header.value}
-        onChange={(e) => onChange({ ...header, value: e.target.value })}
-        className="flex-1 rounded-lg border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-indigo-500"
+        onChange={(val) => onChange({ ...header, value: val })}
+        className="flex-1"
       />
       <button type="button" onClick={onRemove} className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500" aria-label="Eliminar header">
         <Trash2 className="h-4 w-4" />
@@ -179,29 +178,41 @@ export default function Sandbox() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label htmlFor="sandbox-api" className="mb-1 block text-xs font-medium text-gray-600">API</label>
-                <select id="sandbox-api" value={apiId} onChange={(e) => handleApiChange(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500">
+                <SbSelect
+                  value={apiId}
+                  onChange={(val) => handleApiChange(val)}
+                  data-testid="sandbox-api-select"
+                >
                   {MOCK_APIS.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-                </select>
+                </SbSelect>
               </div>
               <div>
                 <label htmlFor="sandbox-version" className="mb-1 block text-xs font-medium text-gray-600">Versión</label>
-                <select id="sandbox-version" value={version} onChange={(e) => setVersion(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500">
+                <SbSelect
+                  value={version}
+                  onChange={(val) => setVersion(val)}
+                  data-testid="sandbox-version-select"
+                >
                   {selectedApi?.versions.map((v) => <option key={v} value={v}>{v}</option>)}
-                </select>
+                </SbSelect>
               </div>
             </div>
 
             {/* Method + Path */}
             <div className="flex gap-2">
-              <select value={method} onChange={(e) => setMethod(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium outline-none focus:border-indigo-500" aria-label="Método HTTP">
+              <SbSelect
+                value={method}
+                onChange={(val) => setMethod(val)}
+                data-testid="sandbox-method-select"
+              >
                 {HTTP_METHODS.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-              <input
+              </SbSelect>
+              <SbInput
                 type="text"
                 value={path}
-                onChange={(e) => setPath(e.target.value)}
+                onChange={(val) => setPath(val)}
                 placeholder="/endpoint"
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                className="flex-1"
               />
             </div>
 
@@ -209,9 +220,15 @@ export default function Sandbox() {
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-medium text-gray-600">Headers</span>
-                <button type="button" onClick={() => setHeaders([...headers, { key: '', value: '' }])} className="flex items-center gap-1 text-xs text-indigo-600 hover:underline">
+                <SbButton
+                  variant="secondary"
+                  styleType="text"
+                  size="small"
+                  onClick={() => setHeaders([...headers, { key: '', value: '' }])}
+                  data-testid="sandbox-add-header"
+                >
                   <Plus className="h-3 w-3" /> Agregar
-                </button>
+                </SbButton>
               </div>
               <div className="space-y-2">
                 {headers.map((h, i) => (
@@ -229,25 +246,35 @@ export default function Sandbox() {
             {BODY_METHODS.has(method) && (
               <div>
                 <label htmlFor="sandbox-body" className="mb-1 block text-xs font-medium text-gray-600">Body (JSON)</label>
-                <textarea
-                  id="sandbox-body"
-                  rows={6}
+                <SbTextarea
                   value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm outline-none focus:border-indigo-500"
+                  onChange={(val) => setBody(val)}
+                  rows={6}
+                  className="font-mono"
+                  data-testid="sandbox-body"
                 />
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={execute}
+            <SbButton
+              variant="primary"
+              styleType="fill"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
+              loading={loading}
+              onClick={() => execute()}
+              className="w-full"
+              data-testid="sandbox-execute"
             >
-              <Play className="h-4 w-4" />
-              {loading ? 'Ejecutando…' : 'Ejecutar'}
-            </button>
+              {loading ? (
+                <>
+                  <SbSpinner size="small" /> Ejecutando…
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4" /> Ejecutar
+                </>
+              )}
+            </SbButton>
           </div>
         </div>
 

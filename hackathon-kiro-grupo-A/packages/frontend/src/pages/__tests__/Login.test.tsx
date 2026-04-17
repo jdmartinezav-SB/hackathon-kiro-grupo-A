@@ -11,11 +11,16 @@ describe('Login Page', () => {
       </TestWrapper>,
     );
 
-    expect(screen.getByLabelText(/correo electrónico/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /ingresar/i }),
-    ).toBeInTheDocument();
+    // After migration to Web Components, jsdom doesn't associate the
+    // `label` attribute of <sb-ui-input> like a native <label>+<input>.
+    // Use data-testid to locate the custom element inputs.
+    expect(screen.getByTestId('login-email')).toBeInTheDocument();
+    expect(screen.getByTestId('login-password')).toBeInTheDocument();
+
+    // The submit button is now an <sb-ui-button>; query by text content
+    // since jsdom doesn't expose role="button" for custom elements.
+    expect(screen.getByText(/ingresar/i)).toBeInTheDocument();
+
     expect(screen.getByRole('link', { name: /regístrate/i })).toBeInTheDocument();
   });
 });
