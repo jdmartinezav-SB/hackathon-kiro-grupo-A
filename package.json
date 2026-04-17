@@ -1,5 +1,10 @@
 {
-	"dependencies": {
-		"@seguros-bolivar/ui-bundle": "^1.0.6"
-	}
+  "name": "conecta-2-portal",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "@seguros-bolivar/ui-bundle": "^1.0.6"
+  }
 }
