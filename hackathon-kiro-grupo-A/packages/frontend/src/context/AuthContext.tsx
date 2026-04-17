@@ -41,15 +41,21 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+const MOCK_USER: User = {
+  id: 'dev-user-001',
+  email: 'dev@conecta2.com',
+  companyName: 'Seguros Bolívar',
+  role: 'admin',
+  businessProfile: 'enterprise',
+};
+
+const MOCK_TOKEN = 'dev-bypass-token';
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
-  const [authState, setAuthState] = useState<AuthState>(() => {
-    const token = localStorage.getItem('accessToken');
-    const storedUser = localStorage.getItem('user');
-    return {
-      accessToken: token,
-      user: storedUser ? (JSON.parse(storedUser) as User) : null,
-    };
+  const [authState, setAuthState] = useState<AuthState>({
+    accessToken: MOCK_TOKEN,
+    user: MOCK_USER,
   });
 
   const isAuthenticated = Boolean(authState.accessToken);

@@ -79,13 +79,15 @@ export const SbInput = forwardRef<HTMLElement, SbInputProps>(
       const el = innerRef.current;
       if (!el) return;
 
-      el.addEventListener('sb-change', handleChange);
-      el.addEventListener('change', handleChange);
+      el.addEventListener('sb-change', handleChange, { capture: true });
+      el.addEventListener('change', handleChange, { capture: true });
+      el.addEventListener('input', handleChange, { capture: true });
       el.addEventListener('blur', handleBlur);
 
       return () => {
-        el.removeEventListener('sb-change', handleChange);
-        el.removeEventListener('change', handleChange);
+        el.removeEventListener('sb-change', handleChange, { capture: true });
+        el.removeEventListener('change', handleChange, { capture: true });
+        el.removeEventListener('input', handleChange, { capture: true });
         el.removeEventListener('blur', handleBlur);
       };
     }, [handleChange, handleBlur]);
