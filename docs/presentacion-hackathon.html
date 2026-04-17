@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conecta 2.0 — Grupo A | Hackathon Kiro</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+      --green: #009056;
+      --green-dark: #05794A;
+      --green-light: #E5F4EE;
+      --green-glow: rgba(0, 144, 86, 0.15);
+      --yellow: #FFE16F;
+      --dark: #0a0a0a;
+      --gray-900: #1a1a2e;
+      --gray-800: #16213e;
+      --gray-700: #282848;
+      --gray-400: #8892b0;
+      --gray-300: #a8b2d1;
+      --white: #e6f1ff;
+      --error: #ff6b6b;
+      --info: #64b5f6;
+      --card-bg: rgba(22, 33, 62, 0.6);
+      --card-border: rgba(0, 144, 86, 0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--dark);
+      color: var(--white);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ===== ANIMATED BACKGROUND ===== */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,144,86,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,144,86,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      z-index: 0;
+    }
+
+    .bg-glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .bg-glow--1 { background: var(--green); top: -200px; right: -200px; }
+    .bg-glow--2 { background: var(--yellow); bottom: -300px; left: -200px; opacity: 0.08; }
+
+    /* ===== LAYOUT ===== */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    section {
+      padding: 80px 0;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      padding: 8px 20px;
+      font-size: 13px;
+      color: var(--gray-300);
+      margin-bottom: 32px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero__badge span {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 .accent {
+      background: linear-gradient(135deg, var(--green), #00c471);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero__sub {
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      color: var(--gray-400);
+      max-width: 700px;
+      margin: 0 auto 48px;
+      font-weight: 300;
+    }
+
+    .hero__stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+
+    .hero__stat {
+      text-align: center;
+    }
+
+    .hero__stat-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--green);
+      line-height: 1;
+    }
+
+    .hero__stat-label {
+      font-size: 13px;
+      color: var(--gray-400);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ===== SECTION TITLES ===== */
+    .section-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--green);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      color: var(--gray-400);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin-bottom: 48px;
+    }
+
+    /* ===== PAIN CARDS ===== */
+    .pain-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .pain-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 32px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .pain-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--error);
+    }
+
+    .pain-card__icon {
+      font-size: 2.5rem;
+      margin-bottom: 16px;
+    }
+
+    .pain-card h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--error);
+    }
+
+    .pain-card p {
+      color: var(--gray-400);
+      font-size: 0.95rem;
+    }
+
+    /* ===== MONOREPO DIAGRAM ===== */
+    .monorepo {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px;
+      backdrop-filter: blur(10px);
+    }
+
+    .monorepo__header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+    }
+
+    .monorepo__icon { font-size: 1.5rem; }
+
+    .monorepo__name {
+      font-family: 'Courier New', monospace;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .monorepo__tag {
+      background: var(--green-glow);
+      color: var(--green);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .monorepo__shared { margin-bottom: 24px; }
+
+    .shared-bar {
+      background: linear-gradient(90deg, rgba(0,144,86,0.1), rgba(0,144,86,0.05));
+      border: 1px dashed rgba(0,144,86,0.3);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .shared-bar span:first-child {
+      font-weight: 700;
+      color: var(--green);
+      font-family: 'Courier New', monospace;
+    }
+
+    .shared-bar__desc {
+      font-size: 13px;
+      color: var(--gray-400);
+    }
+
+    .dev-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .dev-card {
+      background: rgba(10, 10, 10, 0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 20px;
+      transition: transform 0.3s, border-color 0.3s;
+      border-top: 3px solid var(--green);
+    }
+
+    .dev-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .dev-card--1 { border-top-color: var(--green); }
+    .dev-card--2 { border-top-color: var(--info); }
+    .dev-card--3 { border-top-color: var(--yellow); }
+    .dev-card--4 { border-top-color: #ce93d8; }
+    .dev-card--5 { border-top-color: #4dd0e1; }
+
+    .dev-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .dev-card__number {
+      font-size: 1.5rem;
+      font-weight: 900;
+      opacity: 0.3;
+    }
+
+    .dev-card__port {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: var(--gray-400);
+      background: rgba(255,255,255,0.05);
+      padding: 2px 10px;
+      border-radius: 100px;
+    }
+
+    .dev-card h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .dev-card__path {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-bottom: 12px;
+    }
+
+    .dev-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .tag--green { background: rgba(0,144,86,0.15); color: #00c471; }
+    .tag--blue { background: rgba(100,181,246,0.15); color: #64b5f6; }
+    .tag--yellow { background: rgba(255,225,111,0.15); color: #ffe16f; }
+    .tag--purple { background: rgba(206,147,216,0.15); color: #ce93d8; }
+    .tag--cyan { background: rgba(77,208,225,0.15); color: #4dd0e1; }
+
+    .dev-card__list {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 12px;
+    }
+
+    .dev-card__list li {
+      font-size: 12px;
+      color: var(--gray-300);
+      padding: 3px 0;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .dev-card__list li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .dev-card__tables {
+      font-size: 11px;
+      color: var(--gray-400);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 10px;
+    }
+
+    .dev-card__tables span {
+      font-weight: 700;
+      color: var(--gray-300);
+    }
+
+    .db-layer {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: linear-gradient(90deg, rgba(100,181,246,0.08), rgba(100,181,246,0.03));
+      border: 1px solid rgba(100,181,246,0.2);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+
+    .db-layer__icon { font-size: 2rem; }
+
+    .db-layer__text {
+      font-size: 14px;
+      color: var(--gray-300);
+    }
+
+    .db-layer__text strong { color: var(--info); }
+
+    /* ===== SPEC-DRIVEN FLOW ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .flow__step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .flow__num {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--green);
+      line-height: 1;
+      opacity: 0.5;
+    }
+
+    .flow__content h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .flow__content p {
+      font-size: 13px;
+      color: var(--gray-400);
+    }
+
+    .flow__arrow {
+      font-size: 1.5rem;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    /* ===== TIMELINE ===== */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .timeline__row {
+      display: flex;
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    .timeline__time {
+      min-width: 80px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+    }
+
+    .timeline__bar {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .timeline__segment {
+      flex: 1;
+      min-width: 150px;
+      background: rgba(255,255,255,0.03);
+      border-left: 3px solid var(--color);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gray-300);
+    }
+
+    .timeline__segment--integration {
+      flex: 100%;
+      background: linear-gradient(90deg, rgba(0,144,86,0.1), rgba(0,144,86,0.03));
+      border-left-color: var(--green);
+      font-weight: 700;
+      color: var(--green);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    /* ===== IMPACT ===== */
+    .impact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .impact-grid--4 {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .impact-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 40px 32px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s;
+    }
+
+    .impact-card:hover { transform: translateY(-4px); }
+
+    .impact-card--highlight {
+      background: linear-gradient(135deg, rgba(0,144,86,0.15), rgba(0,196,113,0.08));
+      border-color: var(--green);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .impact-card--highlight::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(0,144,86,0.2), transparent 70%);
+      pointer-events: none;
+    }
+
+    .impact-card--highlight .impact-card__value {
+      font-size: 2rem;
+    }
+
+    .impact-card__icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+
+    .impact-card__value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .impact-card__desc {
+      color: var(--gray-400);
+      font-size: 0.95rem;
+    }
+
+    /* ===== RIVALS STRIP ===== */
+    .rivals-strip {
+      margin-top: 48px;
+      text-align: center;
+    }
+
+    .rivals-strip__label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gray-400);
+      margin-bottom: 20px;
+    }
+
+    .rivals-strip__logos {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .rivals-strip__sep {
+      color: rgba(255,255,255,0.1);
+      font-size: 1.5rem;
+    }
+
+    .rival {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 16px 28px;
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+
+    .rival:hover { opacity: 0.7; }
+
+    .rival__name {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--gray-300);
+    }
+
+    .rival__url {
+      font-size: 11px;
+      font-family: 'Courier New', monospace;
+      color: var(--gray-400);
+    }
+
+    .rival--us {
+      opacity: 1;
+      border-color: var(--green);
+      background: linear-gradient(135deg, rgba(0,144,86,0.12), rgba(0,144,86,0.04));
+    }
+
+    .rival--us:hover { opacity: 1; }
+
+    .rival--us .rival__name {
+      color: var(--green);
+      font-size: 16px;
+    }
+
+    .rival--us .rival__url {
+      color: var(--green);
+      opacity: 0.7;
+    }
+
+    /* ===== COMPARE TABLE ===== */
+    .compare-table {
+      overflow-x: auto;
+    }
+
+    .compare-table table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .compare-table th,
+    .compare-table td {
+      padding: 14px 20px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .compare-table thead th {
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-400);
+    }
+
+    .compare-table thead th.compare-new {
+      color: var(--green);
+    }
+
+    .compare-old {
+      color: var(--gray-400);
+      opacity: 0.6;
+    }
+
+    .compare-new {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* ===== CRITERIA ===== */
+    .criteria-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .criteria-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 28px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .criteria-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--green);
+    }
+
+    .criteria-card__icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .criteria-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .criteria-card p {
+      font-size: 13px;
+      color: var(--gray-400);
+      line-height: 1.5;
+    }
+
+    .criteria-card code {
+      background: rgba(0,144,86,0.15);
+      color: var(--green);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      text-align: center;
+      padding: 60px 0 40px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .footer__logo {
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .footer__logo span {
+      color: var(--green);
+    }
+
+    .footer p {
+      color: var(--gray-400);
+      font-size: 14px;
+    }
+
+    .footer__quote {
+      margin-top: 16px;
+      font-style: italic;
+      color: var(--gray-400);
+      opacity: 0.6;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .container { padding: 0 20px; }
+      section { padding: 60px 0; }
+      .hero__stats { gap: 24px; }
+      .flow__arrow { display: none; }
+      .flow { flex-direction: column; }
+      .timeline__row { flex-direction: column; }
+      .timeline__time { min-width: auto; }
+      .dev-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ===== SMOOTH SCROLL ===== */
+    html { scroll-behavior: smooth; }
+
+    /* ===== PRINT ===== */
+    @media print {
+      body { background: #fff; color: #000; }
+      .bg-grid, .bg-glow { display: none; }
+      .pain-card, .dev-card, .impact-card, .criteria-card, .flow__step {
+        border: 1px solid #ddd;
+        background: #fafafa;
+      }
+      .hero h1 .accent { -webkit-text-fill-color: var(--green); }
+    }
+</style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow--1"></div>
+  <div class="bg-glow bg-glow--2"></div>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero__badge">
+        🏆 Hackathon Kiro 2026 &mdash; <span>Grupo A</span>
+      </div>
+      <h1>
+        <span class="accent">Conecta 2.0</span><br>
+        API Developer Portal
+      </h1>
+      <p class="hero__sub">
+        De un repositorio de APIs a un ecosistema de innovación.<br>
+        Open Insurance · Autoservicio · IA Ready
+      </p>
+      <div class="hero__stats">
+        <div class="hero__stat">
+          <div class="hero__stat-value">5</div>
+          <div class="hero__stat-label">Devs en paralelo</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-value">17</div>
+          <div class="hero__stat-label">Requerimientos</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-value">90+</div>
+          <div class="hero__stat-label">Criterios aceptación</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-value">31</div>
+          <div class="hero__stat-label">Tests pasando</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PROBLEMA ===== -->
+  <section id="problema">
+    <div class="container">
+      <div class="section-label">El problema</div>
+      <h2 class="section-title">Tres dolores que frenan el negocio</h2>
+      <p class="section-desc">Un aliado quiere integrar seguros en su app. Hoy eso toma semanas.</p>
+      <div class="pain-grid">
+        <div class="pain-card">
+          <div class="pain-card__icon">⏳</div>
+          <h3>Demoras</h3>
+          <p>Un aliado que quiere vender seguros en su app tiene que esperar semanas entre correos, llamadas y trámites antes de poder empezar.</p>
+        </div>
+        <div class="pain-card">
+          <div class="pain-card__icon">🔍</div>
+          <h3>A ciegas</h3>
+          <p>No hay dónde probar antes de salir a producción, no se sabe cuánto se consume, y la documentación está regada en PDFs desactualizados.</p>
+        </div>
+        <div class="pain-card">
+          <div class="pain-card__icon">⚖️</div>
+          <h3>El mundo cambió</h3>
+          <p>Open Insurance 2026 obliga a que las aseguradoras abran sus servicios a terceros. Quien no se adapte, se queda atrás.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ARQUITECTURA: 5 DEVS EN PARALELO ===== -->
+  <section id="arquitectura">
+    <div class="container">
+      <div class="section-label">Arquitectura</div>
+      <h2 class="section-title">5 Devs · 5 Módulos · 1 Monorepo</h2>
+      <p class="section-desc">Módulos aislados con contratos compartidos. Integración coordinada en la hora final.</p>
+
+      <!-- MONOREPO DIAGRAM -->
+      <div class="monorepo">
+        <div class="monorepo__header">
+          <span class="monorepo__icon">📦</span>
+          <span class="monorepo__name">conecta-2.0/</span>
+          <span class="monorepo__tag">Monorepo</span>
+        </div>
+
+        <div class="monorepo__shared">
+          <div class="shared-bar">
+            <span>🔗 packages/shared/</span>
+            <span class="shared-bar__desc">Middleware Auth JWT · Correlation-ID · Error Handler · Tipos TypeScript · DB Config</span>
+          </div>
+        </div>
+
+        <div class="dev-grid">
+          <!-- DEV 1 -->
+          <div class="dev-card dev-card--1">
+            <div class="dev-card__header">
+              <div class="dev-card__number">D1</div>
+              <div class="dev-card__port">:3000</div>
+            </div>
+            <h3>Backend Core + Auth</h3>
+            <p class="dev-card__path">packages/backend-core/</p>
+            <div class="dev-card__tags">
+              <span class="tag tag--green">OAuth 2.0</span>
+              <span class="tag tag--green">JWT</span>
+              <span class="tag tag--green">RBAC</span>
+            </div>
+            <ul class="dev-card__list">
+              <li>Onboarding autoservicio</li>
+              <li>Register / Login / Verify</li>
+              <li>CRUD Consumers + Apps</li>
+              <li>Admin: aprobar/suspender</li>
+            </ul>
+            <div class="dev-card__tables">
+              <span>6 tablas</span> · consumer, application, credential, subscription_plan
+            </div>
+          </div>
+
+          <!-- DEV 2 -->
+          <div class="dev-card dev-card--2">
+            <div class="dev-card__header">
+              <div class="dev-card__number">D2</div>
+              <div class="dev-card__port">:3002</div>
+            </div>
+            <h3>Catálogo + Parser OpenAPI</h3>
+            <p class="dev-card__path">packages/catalog-service/</p>
+            <div class="dev-card__tags">
+              <span class="tag tag--blue">OpenAPI 3.x</span>
+              <span class="tag tag--blue">YAML/JSON</span>
+            </div>
+            <ul class="dev-card__list">
+              <li>Parser OpenAPI bidireccional</li>
+              <li>Catálogo filtrado por perfil</li>
+              <li>Docs interactivas</li>
+              <li>Snippets: JS, Python, Java, cURL</li>
+            </ul>
+            <div class="dev-card__tables">
+              <span>3 tablas</span> · api_definition, api_version, sunset_plan
+            </div>
+          </div>
+
+          <!-- DEV 3 -->
+          <div class="dev-card dev-card--3">
+            <div class="dev-card__header">
+              <div class="dev-card__number">D3</div>
+              <div class="dev-card__port">:3003</div>
+            </div>
+            <h3>Sandbox + Gateway</h3>
+            <p class="dev-card__path">packages/sandbox-service/</p>
+            <div class="dev-card__tags">
+              <span class="tag tag--yellow">Mock Engine</span>
+              <span class="tag tag--yellow">SOAP↔REST</span>
+            </div>
+            <ul class="dev-card__list">
+              <li>Mock Engine desde spec OpenAPI</li>
+              <li>Request Validator</li>
+              <li>Gateway proxy con traducción SOAP</li>
+              <li>Historial de ejecuciones</li>
+            </ul>
+            <div class="dev-card__tables">
+              <span>2 tablas</span> · sandbox_history, sync_log
+            </div>
+          </div>
+
+          <!-- DEV 4 -->
+          <div class="dev-card dev-card--4">
+            <div class="dev-card__header">
+              <div class="dev-card__number">D4</div>
+              <div class="dev-card__port">:3004</div>
+            </div>
+            <h3>Analytics + Auditoría</h3>
+            <p class="dev-card__path">packages/analytics-service/</p>
+            <div class="dev-card__tags">
+              <span class="tag tag--purple">Dashboard</span>
+              <span class="tag tag--purple">Audit Trail</span>
+            </div>
+            <ul class="dev-card__list">
+              <li>Dashboard de consumo y cuotas</li>
+              <li>Audit logs inmutables</li>
+              <li>Exportación CSV/JSON</li>
+              <li>Notificaciones lifecycle</li>
+            </ul>
+            <div class="dev-card__tables">
+              <span>4 tablas</span> · audit_log, usage_metric, notification
+            </div>
+          </div>
+
+          <!-- DEV 5 -->
+          <div class="dev-card dev-card--5">
+            <div class="dev-card__header">
+              <div class="dev-card__number">D5</div>
+              <div class="dev-card__port">:5173</div>
+            </div>
+            <h3>Frontend React</h3>
+            <p class="dev-card__path">packages/frontend/</p>
+            <div class="dev-card__tags">
+              <span class="tag tag--cyan">React 18</span>
+              <span class="tag tag--cyan">Vite</span>
+              <span class="tag tag--cyan">TailwindCSS</span>
+            </div>
+            <ul class="dev-card__list">
+              <li>Portal unificado completo</li>
+              <li>Auth + Catálogo + Sandbox</li>
+              <li>Analytics + Admin</li>
+              <li>Consume los 4 backends</li>
+            </ul>
+            <div class="dev-card__tables">
+              <span>9 páginas</span> · Login, Register, Catalog, Sandbox, Analytics...
+            </div>
+          </div>
+        </div>
+
+        <!-- DB LAYER -->
+        <div class="db-layer">
+          <div class="db-layer__icon">🐘</div>
+          <div class="db-layer__text">
+            <strong>PostgreSQL 15.4+</strong> — 14 tablas · Migraciones numeradas por dev · Audit logs inmutables (REVOKE UPDATE/DELETE)
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SPEC-DRIVEN FLOW ===== -->
+  <section id="spec-driven">
+    <div class="container">
+      <div class="section-label">Metodología</div>
+      <h2 class="section-title">Spec-Driven con Kiro</h2>
+      <p class="section-desc">Cero código improvisado. Cada línea es trazable a un requerimiento.</p>
+
+      <div class="flow">
+        <div class="flow__step">
+          <div class="flow__num">1</div>
+          <div class="flow__content">
+            <h4>Requirements</h4>
+            <p>17 requerimientos con criterios de aceptación medibles</p>
+          </div>
+        </div>
+        <div class="flow__arrow">→</div>
+        <div class="flow__step">
+          <div class="flow__num">2</div>
+          <div class="flow__content">
+            <h4>Design</h4>
+            <p>Arquitectura, contratos API, modelo de datos, propiedades formales</p>
+          </div>
+        </div>
+        <div class="flow__arrow">→</div>
+        <div class="flow__step">
+          <div class="flow__num">3</div>
+          <div class="flow__content">
+            <h4>Tasks</h4>
+            <p>5 archivos de tasks paralelos, uno por dev, sin conflictos</p>
+          </div>
+        </div>
+        <div class="flow__arrow">→</div>
+        <div class="flow__step">
+          <div class="flow__num">4</div>
+          <div class="flow__content">
+            <h4>Código + Tests</h4>
+            <p>Implementación guiada por spec. 31 tests pasando.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TIMELINE ===== -->
+  <section id="timeline">
+    <div class="container">
+      <div class="section-label">Ejecución</div>
+      <h2 class="section-title">Timeline de 3 horas</h2>
+      <p class="section-desc">Cada dev trabaja en su módulo aislado. Integración coordinada al final.</p>
+
+      <div class="timeline">
+        <div class="timeline__row">
+          <div class="timeline__time">Hora 1</div>
+          <div class="timeline__bar timeline__bar--h1">
+            <div class="timeline__segment" style="--color: var(--green)">D1: Auth + Migraciones</div>
+            <div class="timeline__segment" style="--color: var(--info)">D2: Parser + Migraciones</div>
+            <div class="timeline__segment" style="--color: var(--yellow)">D3: Mock Engine</div>
+            <div class="timeline__segment" style="--color: #ce93d8">D4: Auditoría + Migraciones</div>
+            <div class="timeline__segment" style="--color: #4dd0e1">D5: Setup + Auth UI</div>
+          </div>
+        </div>
+        <div class="timeline__row">
+          <div class="timeline__time">Hora 2</div>
+          <div class="timeline__bar timeline__bar--h2">
+            <div class="timeline__segment" style="--color: var(--green)">D1: CRUD + Admin</div>
+            <div class="timeline__segment" style="--color: var(--info)">D2: Catálogo + Docs</div>
+            <div class="timeline__segment" style="--color: var(--yellow)">D3: Sandbox + Gateway</div>
+            <div class="timeline__segment" style="--color: #ce93d8">D4: Analytics + Notif.</div>
+            <div class="timeline__segment" style="--color: #4dd0e1">D5: Páginas principales</div>
+          </div>
+        </div>
+        <div class="timeline__row">
+          <div class="timeline__time">Hora 3</div>
+          <div class="timeline__bar timeline__bar--h3">
+            <div class="timeline__segment timeline__segment--integration" style="--color: var(--green)">
+              🔗 Integración coordinada — Tests E2E — Corrección de contratos
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== IMPACTO ===== -->
+  <section id="impacto">
+    <div class="container">
+      <div class="section-label">Impacto</div>
+      <h2 class="section-title">Tres números que importan</h2>
+
+      <div class="impact-grid impact-grid--4">
+        <div class="impact-card">
+          <div class="impact-card__icon">⏱️</div>
+          <div class="impact-card__value">Semanas → Minutos</div>
+          <div class="impact-card__desc">Primera llamada API exitosa del aliado</div>
+        </div>
+        <div class="impact-card">
+          <div class="impact-card__icon">🤖</div>
+          <div class="impact-card__value">IA Ready</div>
+          <div class="impact-card__desc">Specs enriquecidas para agentes autónomos (MCP)</div>
+        </div>
+        <div class="impact-card impact-card--highlight">
+          <div class="impact-card__icon">🌎</div>
+          <div class="impact-card__value">Local → Global</div>
+          <div class="impact-card__desc">De vender seguros en Colombia a ser plataforma abierta para cualquier aliado del mundo. Open Insurance sin fronteras.</div>
+        </div>
+      </div>
+
+      <!-- RIVALS STRIP -->
+      <div class="rivals-strip">
+        <p class="rivals-strip__label">Jugamos en la misma liga</p>
+        <div class="rivals-strip__logos">
+          <div class="rival">
+            <span class="rival__name">Zurich</span>
+            <span class="rival__url">exchange.zurich.com</span>
+          </div>
+          <span class="rivals-strip__sep">·</span>
+          <div class="rival">
+            <span class="rival__name">Chubb</span>
+            <span class="rival__url">studio.chubb.com</span>
+          </div>
+          <span class="rivals-strip__sep">·</span>
+          <div class="rival rival--us">
+            <span class="rival__name">Seguros Bolívar</span>
+            <span class="rival__url">conecta.segurosbolivar.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== COMPARATIVA ===== -->
+  <section id="comparativa">
+    <div class="container">
+      <div class="section-label">Evolución</div>
+      <h2 class="section-title">Conecta 1.0 vs 2.0</h2>
+
+      <div class="compare-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Aspecto</th>
+              <th class="compare-old">Conecta 1.0</th>
+              <th class="compare-new">Conecta 2.0</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Onboarding</td>
+              <td class="compare-old">Manual, semanas</td>
+              <td class="compare-new">Autoservicio, minutos ✓</td>
+            </tr>
+            <tr>
+              <td>Documentación</td>
+              <td class="compare-old">PDFs dispersos</td>
+              <td class="compare-new">Interactiva + Snippets 4 lenguajes ✓</td>
+            </tr>
+            <tr>
+              <td>Sandbox</td>
+              <td class="compare-old">No existe</td>
+              <td class="compare-new">Mock Engine + Validator en vivo ✓</td>
+            </tr>
+            <tr>
+              <td>Analytics</td>
+              <td class="compare-old">Reportes manuales</td>
+              <td class="compare-new">Dashboard tiempo real + Cuotas ✓</td>
+            </tr>
+            <tr>
+              <td>Seguridad</td>
+              <td class="compare-old">API Keys básicas</td>
+              <td class="compare-new">OAuth 2.0 + JWT + mTLS + OWASP ✓</td>
+            </tr>
+            <tr>
+              <td>Legados</td>
+              <td class="compare-old">SOAP directo</td>
+              <td class="compare-new">Gateway con traducción SOAP↔REST ✓</td>
+            </tr>
+            <tr>
+              <td>IA</td>
+              <td class="compare-old">No preparado</td>
+              <td class="compare-new">Specs semánticas + MCP Ready ✓</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__logo">Conecta <span>2.0</span></div>
+      <p>Grupo A — Hackathon Kiro 2026 — Seguros Bolívar</p>
+      <p class="footer__quote">"De un repositorio de APIs a un ecosistema de innovación"</p>
+    </div>
+  </footer>
+
+</body>
+</html>
