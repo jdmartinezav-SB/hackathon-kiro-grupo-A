@@ -1,0 +1,921 @@
+---
+inclusion: always
+version: '3.3.0'
+date: '2025-01-16'
+---
+
+# Seguros Bolivar UI Design System - CSS Standards
+
+## 🎯 Contexto del Proyecto
+
+**Design System moderno multi-marca** para aplicaciones web empresariales.
+
+- 6 marcas: White Label, Jelpit, Davivienda, Cien Cuadras, Doctor Aki, Seguros Bolívar
+- Temas: light/dark
+- **IMPORTANTE:** Estas reglas son OBLIGATORIAS y NO negociables.
+
+---
+
+## 📋 PRINCIPIOS FUNDAMENTALES
+
+### SIEMPRE Usar:
+
+- ✅ CSS Nesting nativo con `&`
+- ✅ `@layer` para control de cascada (8 capas estándar)
+- ✅ Logical Properties (inline-size, padding-inline, etc.) - RTL/LTR ready
+- ✅ `clamp()` para responsive fluido
+- ✅ Variables CSS con prefijo `--sb-ui-`
+- ✅ Nomenclatura BEM con prefijo `sb-ui-`
+- ✅ Accesibilidad completa (prefers-reduced-motion, prefers-contrast, focus-visible)
+
+### NUNCA Usar:
+
+- ❌ Physical properties (width, height, left, right, padding-left, margin-top, etc.)
+- ❌ Media queries para tamaños (usar clamp() en su lugar)
+- ❌ Selectores sin prefijo `sb-ui-`
+- ❌ Variables sin prefijo `--sb-ui-`
+- ❌ Repetir selectores (usar nesting)
+- ❌ `!important` (excepto en @layer utilities cuando es absolutamente necesario)
+
+---
+
+## 🏗️ TEMPLATE OBLIGATORIO
+
+```css
+/**
+ * [ComponentName] Component - Seguros Bolivar UI Design System
+ * - CSS Nesting nativo con &
+ * - @layer para control de cascada
+ * - Logical Properties (RTL/LTR)
+ * - clamp() para responsive fluido
+ *
+ * Uso: <elemento class="sb-ui-[component] sb-ui-[component]--[variant]">
+ */
+
+/* Elegir según la complejidad del componente: */
+/* 8 capas - Componentes simples */
+@layer reset, tokens, base, variants, sizes, modifiers, states, utilities;
+/* 9 capas - Con style-variants (stroke/fill/text) */
+/* @layer reset, tokens, base, variants, style-variants, sizes, modifiers, states, utilities; */
+/* 10 capas - Completo con icon-positions */
+/* @layer reset, tokens, base, variants, style-variants, brand-overrides, sizes, modifiers, icon-positions, states, utilities; */
+
+/* ========================================
+   RESET LAYER
+   ======================================== */
+@layer reset {
+  .sb-ui-[component] {
+    all: unset;
+    box-sizing: border-box;
+  }
+}
+
+/* ========================================
+   TOKENS LAYER - Variables CSS
+   ======================================== */
+@layer tokens {
+  .sb-ui-[component] {
+    /* Colores BASE - Estados interactivos */
+    --sb-ui-[component]-bg-color: var(--sb-ui-color-grayscale-white, #fff);
+    --sb-ui-[component]-bg-hover: var(--sb-ui-color-grayscale-L400, #f0f0f0);
+    --sb-ui-[component]-bg-active: var(--sb-ui-color-grayscale-L300, #e0e0e0);
+    --sb-ui-[component]-bg-disabled: var(--sb-ui-color-grayscale-L300, #f5f5f5);
+    --sb-ui-[component]-bg-disabled-hover: var(--sb-ui-color-grayscale-L300, #f5f5f5);
+
+    --sb-ui-[component]-text-color: var(--sb-ui-color-grayscale-black, #000);
+    --sb-ui-[component]-text-hover: var(--sb-ui-color-grayscale-black, #000);
+    --sb-ui-[component]-text-active: var(--sb-ui-color-grayscale-black, #000);
+    --sb-ui-[component]-text-disabled: var(--sb-ui-color-grayscale-base, #9b9b9b);
+    --sb-ui-[component]-text-disabled-hover: var(--sb-ui-color-grayscale-base, #9b9b9b);
+
+    --sb-ui-[component]-border-color: var(--sb-ui-color-grayscale-L200, #e0e0e0);
+    --sb-ui-[component]-border-hover: var(--sb-ui-color-grayscale-L100, #d0d0d0);
+    --sb-ui-[component]-border-active: var(--sb-ui-color-grayscale-base, #9b9b9b);
+    --sb-ui-[component]-border-disabled: var(--sb-ui-color-grayscale-L300, #f5f5f5);
+    --sb-ui-[component]-border-disabled-hover: var(--sb-ui-color-grayscale-L300, #f5f5f5);
+
+    /* Espaciado - SIEMPRE con clamp() */
+    --sb-ui-[component]-padding-inline: clamp(0.8rem, 0.5rem + 1.5vw, 2rem);
+    --sb-ui-[component]-padding-block: clamp(0.4rem, 0.3rem + 0.5vw, 0.875rem);
+    --sb-ui-[component]-gap: clamp(0.25rem, 0.2rem + 0.3vw, 0.5rem);
+
+    /* Tipografía - SIEMPRE con clamp() */
+    --sb-ui-[component]-font-family: var(--sb-ui-typography-fontFamily, 'Roboto', sans-serif);
+    --sb-ui-[component]-font-size: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+    --sb-ui-[component]-font-weight: 700;
+    --sb-ui-[component]-line-height: 1.2;
+
+    /* Tamaños - Logical properties */
+    --sb-ui-[component]-min-inline-size: clamp(80px, 15vw, 120px);
+    --sb-ui-[component]-min-block-size: clamp(36px, 8vw, 44px);
+
+    /* Bordes */
+    --sb-ui-[component]-border-width: 1px;
+    --sb-ui-[component]-border-radius: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
+
+    /* Sombras (opcional) */
+    --sb-ui-[component]-shadow: none;
+    --sb-ui-[component]-shadow-hover: none;
+    --sb-ui-[component]-shadow-active: none;
+
+    /* Transiciones - NO incluir outline para evitar destellos en focus */
+    --sb-ui-[component]-transition:
+      background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+}
+
+/* ========================================
+   BASE LAYER - Estilos base
+   ======================================== */
+@layer base {
+  .sb-ui-[component] {
+    /* Layout */
+    display: block;
+    position: relative;
+
+    /* Spacing - SOLO Logical Properties */
+    padding-inline: var(--sb-ui-[component]-padding-inline);
+    padding-block: var(--sb-ui-[component]-padding-block);
+
+    /* Typography */
+    font-family: var(--sb-ui-[component]-font-family);
+    font-size: var(--sb-ui-[component]-font-size);
+    font-weight: var(--sb-ui-[component]-font-weight);
+    line-height: var(--sb-ui-[component]-line-height);
+
+    /* Appearance */
+    background-color: var(--sb-ui-[component]-bg-color);
+    color: var(--sb-ui-[component]-text-color);
+    border: var(--sb-ui-[component]-border-width) solid var(--sb-ui-[component]-border-color);
+    border-radius: var(--sb-ui-[component]-border-radius);
+
+    /* Animation */
+    transition: var(--sb-ui-[component]-transition);
+
+    /* Nested Pseudo-classes - SIEMPRE usar & */
+    &:hover:not(:disabled):not(.sb-ui-[component]--disabled) {
+      background-color: var(--sb-ui-[component]-bg-hover);
+      color: var(--sb-ui-[component]-text-hover, var(--sb-ui-[component]-text-color));
+      border-color: var(--sb-ui-[component]-border-hover, var(--sb-ui-[component]-border-color));
+      cursor: pointer;
+    }
+
+    &:active:not(:disabled):not(.sb-ui-[component]--disabled) {
+      background-color: var(--sb-ui-[component]-bg-active);
+      color: var(--sb-ui-[component]-text-active, var(--sb-ui-[component]-text-color));
+      border-color: var(--sb-ui-[component]-border-active, var(--sb-ui-[component]-border-color));
+      cursor: pointer;
+    }
+
+    &:focus-visible:not(:disabled):not(.sb-ui-[component]--disabled) {
+      outline: 3px solid var(--sb-ui-color-secondary-L100);
+      outline-offset: 2px;
+    }
+
+    &:disabled,
+    &.sb-ui-[component]--disabled {
+      background-color: var(--sb-ui-[component]-bg-disabled);
+      color: var(--sb-ui-[component]-text-disabled);
+      border-color: var(--sb-ui-[component]-border-disabled);
+      cursor: not-allowed;
+      box-shadow: none;
+      outline: none;
+    }
+
+    /* Disabled hover - usar variables específicas con fallback */
+    /* Usar @layer brand-overrides para personalizar, NO !important */
+    &:disabled:hover,
+    &.sb-ui-[component]--disabled:hover {
+      background-color: var(
+        --sb-ui-[component]-bg-disabled-hover,
+        var(--sb-ui-[component]-bg-disabled)
+      );
+      color: var(
+        --sb-ui-[component]-text-disabled-hover,
+        var(--sb-ui-[component]-text-disabled)
+      );
+      border-color: var(
+        --sb-ui-[component]-border-disabled-hover,
+        var(--sb-ui-[component]-border-disabled)
+      );
+      cursor: not-allowed;
+      box-shadow: none;
+      outline: none;
+    }
+
+    /* Disabled focus - sin outline */
+    &:disabled:focus,
+    &:disabled:focus-visible,
+    &.sb-ui-[component]--disabled:focus,
+    &.sb-ui-[component]--disabled:focus-visible {
+      outline: none;
+    }
+  }
+}
+
+/* ========================================
+   VARIANTS LAYER
+   ======================================== */
+@layer variants {
+  .sb-ui-[component]--primary {
+    --sb-ui-[component]-bg-color: var(--sb-ui-color-primary-base);
+    --sb-ui-[component]-text-color: var(--sb-ui-color-grayscale-white);
+  }
+
+  .sb-ui-[component]--secondary {
+    --sb-ui-[component]-bg-color: var(--sb-ui-color-secondary-base);
+    --sb-ui-[component]-text-color: var(--sb-ui-color-primary-base);
+  }
+}
+
+/* ========================================
+   SIZES LAYER
+   ======================================== */
+@layer sizes {
+  .sb-ui-[component]--small {
+    --sb-ui-[component]-font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem);
+    --sb-ui-[component]-padding-inline: clamp(0.4rem, 0.3rem + 0.5vw, 0.8rem);
+    --sb-ui-[component]-padding-block: clamp(0.2rem, 0.15rem + 0.3vw, 0.4rem);
+  }
+
+  .sb-ui-[component]--large {
+    --sb-ui-[component]-font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
+    --sb-ui-[component]-padding-inline: clamp(0.8rem, 0.6rem + 1.5vw, 2rem);
+    --sb-ui-[component]-padding-block: clamp(0.4rem, 0.3rem + 0.8vw, 1rem);
+  }
+}
+
+/* ========================================
+   MODIFIERS LAYER
+   ======================================== */
+@layer modifiers {
+  .sb-ui-[component]--block {
+    inline-size: 100%;
+  }
+
+  .sb-ui-[component]--rounded {
+    --sb-ui-[component]-border-radius: clamp(12px, 1rem + 0.5vw, 20px);
+  }
+}
+
+/* ========================================
+   STATES LAYER
+   ======================================== */
+@layer states {
+  .sb-ui-[component]--loading {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .sb-ui-[component]--error {
+    --sb-ui-[component]-border-color: var(--sb-ui-color-feedback-error-base);
+  }
+
+  .sb-ui-[component]--success {
+    --sb-ui-[component]-border-color: var(--sb-ui-color-feedback-success-base);
+  }
+}
+
+/* ========================================
+   UTILITIES LAYER (máxima prioridad)
+   ======================================== */
+@layer utilities {
+  /* High contrast mode support - OBLIGATORIO */
+  @media (prefers-contrast: high) {
+    .sb-ui-[component] {
+      --sb-ui-[component]-border-width: 2px;
+    }
+  }
+
+  /* Reduced motion support - OBLIGATORIO */
+  @media (prefers-reduced-motion: reduce) {
+    .sb-ui-[component] {
+      --sb-ui-[component]-transition: none;
+      animation: none;
+    }
+  }
+
+  /* Mobile styles si es necesario */
+  @media (inline-size <= 640px) {
+    .sb-ui-[component] {
+      /* mobile specific styles */
+    }
+  }
+}
+```
+
+
+---
+
+## 🎨 ESTADO DISABLED + HOVER (NUEVO EN v3.3.0)
+
+### Concepto
+
+Los componentes pueden mostrar **visual feedback** cuando el usuario pasa el mouse sobre un elemento deshabilitado, sin cambiar su funcionalidad.
+
+### Variables Disponibles
+
+```css
+/* En @layer tokens */
+--sb-ui-[component]-bg-disabled: var(--sb-ui-color-grayscale-L300); /* Sin hover */
+--sb-ui-[component]-bg-disabled-hover: var(--sb-ui-color-grayscale-L200); /* Con hover */
+
+--sb-ui-[component]-text-disabled: var(--sb-ui-color-grayscale-base);
+--sb-ui-[component]-text-disabled-hover: var(--sb-ui-color-grayscale-L100);
+
+--sb-ui-[component]-border-disabled: var(--sb-ui-color-grayscale-L300);
+--sb-ui-[component]-border-disabled-hover: var(--sb-ui-color-grayscale-L200);
+```
+
+### Implementación en BASE LAYER
+
+```css
+@layer base {
+  .sb-ui-[component] {
+    &:disabled:hover,
+    &.sb-ui-[component]--disabled:hover {
+      /* Usa -disabled-hover, fallback a -disabled si no está definido */
+      background-color: var(
+        --sb-ui-[component]-bg-disabled-hover,
+        var(--sb-ui-[component]-bg-disabled)
+      ) !important;
+      color: var(
+        --sb-ui-[component]-text-disabled-hover,
+        var(--sb-ui-[component]-text-disabled)
+      ) !important;
+      border-color: var(
+        --sb-ui-[component]-border-disabled-hover,
+        var(--sb-ui-[component]-border-disabled)
+      ) !important;
+      cursor: not-allowed;
+      box-shadow: none;
+      outline: none;
+    }
+  }
+}
+```
+
+### Ejemplo de Uso - Brand Override
+
+```css
+@layer brand-overrides {
+  [data-brand='seguros-bolivar'] .sb-ui-button--primary.sb-ui-button--fill {
+    /* DISABLED: fondo gris claro */
+    --sb-ui-button-bg-disabled: var(--sb-ui-color-grayscale-L300); /* #F5F5F5 */
+    --sb-ui-button-text-disabled: var(--sb-ui-color-grayscale-base); /* #9B9B9B */
+
+    /* DISABLED + HOVER: texto más claro para feedback visual */
+    --sb-ui-button-bg-disabled-hover: var(--sb-ui-color-grayscale-L300); /* #F5F5F5 mantiene */
+    --sb-ui-button-text-disabled-hover: var(--sb-ui-color-grayscale-L100); /* #B9B9B9 más claro */
+  }
+
+  [data-brand='seguros-bolivar'] .sb-ui-button--primary.sb-ui-button--text {
+    /* DISABLED: transparente */
+    --sb-ui-button-bg-disabled: transparent;
+    --sb-ui-button-text-disabled: var(--sb-ui-color-grayscale-base); /* #9B9B9B */
+
+    /* DISABLED + HOVER: aparece fondo gris */
+    --sb-ui-button-bg-disabled-hover: var(--sb-ui-color-grayscale-L300); /* #F5F5F5 aparece */
+    --sb-ui-button-text-disabled-hover: var(--sb-ui-color-grayscale-base); /* #9B9B9B mantiene */
+  }
+}
+```
+
+### Casos de Uso Comunes
+
+| Variante   | Disabled                           | Disabled + Hover               | Feedback Visual |
+| ---------- | ---------------------------------- | ------------------------------ | --------------- |
+| **STROKE** | `bg: transparent`                  | `bg: #E1E1E1`                  | Fondo aparece   |
+| **FILL**   | `bg: #F5F5F5`, `text: #9B9B9B`     | `bg: #F5F5F5`, `text: #B9B9B9` | Texto se aclara |
+| **TEXT**   | `bg: transparent`, `text: #9B9B9B` | `bg: #F5F5F5`, `text: #9B9B9B` | Fondo aparece   |
+
+### Beneficios
+
+✅ **UX mejorada:** Usuario sabe que el botón detecta hover pero está deshabilitado
+✅ **Flexible:** Cada marca puede personalizar su feedback visual
+✅ **Fallback automático:** Si no se define `-disabled-hover`, usa `-disabled`
+✅ **Consistente:** Mismo patrón para todos los componentes
+
+
+---
+
+## 📏 MAPEO DE PROPIEDADES (OBLIGATORIO)
+
+**Cuando vayas a escribir una propiedad física, DETENTE y usa su equivalente lógico:**
+
+| ❌ PROHIBIDO             | ✅ USAR SIEMPRE                        | Descripción       |
+| ------------------------ | -------------------------------------- | ----------------- |
+| `width`                  | `inline-size`                          | Tamaño horizontal |
+| `height`                 | `block-size`                           | Tamaño vertical   |
+| `min-width`              | `min-inline-size`                      | Mínimo horizontal |
+| `max-width`              | `max-inline-size`                      | Máximo horizontal |
+| `min-height`             | `min-block-size`                       | Mínimo vertical   |
+| `max-height`             | `max-block-size`                       | Máximo vertical   |
+| `padding-left`           | `padding-inline-start`                 | Padding inicio    |
+| `padding-right`          | `padding-inline-end`                   | Padding fin       |
+| `padding: X Y`           | `padding-block: X; padding-inline: Y;` | Padding shorthand |
+| `margin-left`            | `margin-inline-start`                  | Margin inicio     |
+| `margin-right`           | `margin-inline-end`                    | Margin fin        |
+| `left`                   | `inset-inline-start`                   | Posición inicio   |
+| `right`                  | `inset-inline-end`                     | Posición fin      |
+| `top`                    | `inset-block-start`                    | Posición arriba   |
+| `bottom`                 | `inset-block-end`                      | Posición abajo    |
+| `border-left`            | `border-inline-start`                  | Borde inicio      |
+| `border-right`           | `border-inline-end`                    | Borde fin         |
+| `border-top-left-radius` | `border-start-start-radius`            | Radio esquina     |
+
+### Ejemplo de conversión:
+
+```css
+/* ❌ PROHIBIDO */
+.sb-ui-card {
+  width: 300px;
+  height: 200px;
+  padding: 1rem 2rem;
+  margin-left: 1rem;
+  border-left: 2px solid red;
+}
+
+/* ✅ CORRECTO */
+.sb-ui-card {
+  inline-size: 300px;
+  block-size: 200px;
+  padding-block: 1rem;
+  padding-inline: 2rem;
+  margin-inline-start: 1rem;
+  border-inline-start: 2px solid red;
+}
+```
+
+---
+
+## 🎨 RESPONSIVE CON clamp() (OBLIGATORIO)
+
+**NUNCA usar media queries para tamaños. SIEMPRE usar clamp():**
+
+```css
+/* ❌ PROHIBIDO */
+font-size: 1rem;
+@media (max-width: 768px) {
+  font-size: 0.875rem;
+}
+
+/* ✅ CORRECTO */
+font-size: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+```
+
+### Valores Comunes Predefinidos:
+
+```css
+/* Font sizes */
+--sb-ui-font-small: clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem);
+--sb-ui-font-medium: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+--sb-ui-font-large: clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
+
+/* Padding */
+--sb-ui-padding-small: clamp(0.5rem, 0.3rem + 0.8vw, 1rem);
+--sb-ui-padding-medium: clamp(0.8rem, 0.5rem + 1.5vw, 2rem);
+
+/* Border radius */
+--sb-ui-radius-small: clamp(4px, 0.3rem + 0.3vw, 8px);
+--sb-ui-radius-medium: clamp(6px, 0.4rem + 0.5vw, 12px);
+
+/* Gap */
+--sb-ui-gap-small: clamp(0.25rem, 0.2rem + 0.3vw, 0.5rem);
+--sb-ui-gap-medium: clamp(0.5rem, 0.4rem + 0.5vw, 1rem);
+```
+
+
+---
+
+## 🎭 CSS NESTING (OBLIGATORIO)
+
+**SIEMPRE usar `&` para anidar. NUNCA repetir selectores.**
+
+```css
+/* ❌ PROHIBIDO - Repetir selector */
+.sb-ui-button {
+  padding: 1rem;
+}
+.sb-ui-button:hover {
+  background: blue;
+}
+.sb-ui-button--primary {
+  color: red;
+}
+
+/* ✅ CORRECTO - Usar & */
+.sb-ui-button {
+  padding: 1rem;
+
+  &:hover:not(:disabled) {
+    background: blue;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--sb-ui-color-primary-L100);
+    outline-offset: 4px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &--primary {
+    --sb-ui-button-bg: var(--sb-ui-color-primary-base);
+  }
+
+  &--secondary {
+    --sb-ui-button-bg: var(--sb-ui-color-secondary-base);
+  }
+}
+```
+
+**Límite: Máximo 3 niveles de nesting**
+
+---
+
+## 📋 NOMENCLATURA (OBLIGATORIO)
+
+### Clases CSS - BEM con prefijo sb-ui-
+
+```css
+/* ✅ CORRECTO */
+.sb-ui-button                  /* Block */
+.sb-ui-button--primary         /* Block + Modifier */
+.sb-ui-button--small           /* Block + Size */
+.sb-ui-button--loading         /* Block + State */
+
+/* ❌ PROHIBIDO */
+.button                     /* Sin prefijo sb-ui- */
+.sb-ui-button-primary          /* Falta -- */
+.sb-ui-button__icon            /* No usar __ en atoms */
+.sbUiButton                 /* No camelCase */
+```
+
+### Variables CSS - SIEMPRE --sb-ui-
+
+```css
+/* ✅ CORRECTO */
+--sb-ui-button-bg-color
+--sb-ui-button-padding-inline
+--sb-ui-color-primary-base
+
+/* ❌ PROHIBIDO */
+--button-bg                 /* Sin prefijo --sb-ui- */
+--sb-ui-button-padding-left    /* Usar padding-inline */
+--buttonBgColor             /* No camelCase */
+```
+
+
+---
+
+## 🏆 @layer - CAPAS ESTÁNDAR (OBLIGATORIO)
+
+**Declarar SIEMPRE al inicio del archivo:**
+
+```css
+/* Para componentes simples (8 capas) */
+@layer reset, tokens, base, variants, sizes, modifiers, states, utilities;
+
+/* Para componentes con style-variants (9 capas) - como button */
+@layer reset, tokens, base, variants, style-variants, sizes, modifiers, states, utilities;
+
+/* Para componentes con icon-positions (10 capas) - como button */
+@layer reset, tokens, base, variants, style-variants, brand-overrides, sizes, modifiers, icon-positions, states, utilities;
+```
+
+| Capa              | Prioridad     | Uso                                        |
+| ----------------- | ------------- | ------------------------------------------ |
+| `reset`           | 1 (más baja)  | `all: unset`, `box-sizing`                 |
+| `tokens`          | 2             | Variables CSS del componente               |
+| `base`            | 3             | Estilos base y estructura                  |
+| `variants`        | 4             | primary, secondary, tertiary, error        |
+| `style-variants`  | 5 (opcional)  | stroke, fill, text                         |
+| `brand-overrides` | 6             | **NUEVO**: Overrides específicos por marca |
+| `sizes`           | 7             | small, medium, large                       |
+| `modifiers`       | 8             | square, circle, block                      |
+| `icon-positions`  | 9 (opcional)  | icon-left, icon-right, icon-only           |
+| `states`          | 10            | hover, focus, disabled, loading            |
+| `utilities`       | 11 (más alta) | media queries, accesibilidad               |
+
+**NUEVO: Layer `brand-overrides`**
+
+El layer `brand-overrides` permite a las marcas sobrescribir variables CSS del componente base sin usar `!important`. Tiene prioridad sobre `variants` y `style-variants` pero menor que `utilities`.
+
+**Ejemplo de uso:**
+
+```css
+@layer brand-overrides {
+  [data-brand='seguros-bolivar'] .sb-ui-button--primary {
+    --sb-ui-button-text-hover: var(--sb-ui-color-primary-D100);
+    --sb-ui-button-text-active: var(--sb-ui-color-primary-D100);
+  }
+}
+```
+
+**Para Brand Overrides:**
+
+```css
+@layer brand-overrides {
+  [data-brand='davivienda'] .sb-ui-button {
+    --sb-ui-button-bg-color: var(--sb-ui-color-primary-base);
+  }
+}
+```
+
+---
+
+## ♿ ACCESIBILIDAD (OBLIGATORIO)
+
+**SIEMPRE incluir estos 4 elementos en TODOS los componentes:**
+
+```css
+@layer utilities {
+  /* 1. Reducción de movimiento - OBLIGATORIO */
+  @media (prefers-reduced-motion: reduce) {
+    .sb-ui-[component] {
+      animation: none;
+      transition: none;
+    }
+  }
+
+  /* 2. Alto contraste - OBLIGATORIO */
+  @media (prefers-contrast: high) {
+    .sb-ui-[component] {
+      --sb-ui-[component]-border-width: 2px;
+      outline: 2px solid currentColor;
+    }
+  }
+}
+
+@layer base {
+  .sb-ui-[component] {
+    /* 3. Focus visible - OBLIGATORIO */
+    &:focus-visible {
+      outline: 3px solid var(--sb-ui-color-primary-L100);
+      outline-offset: 4px;
+    }
+
+    /* 4. Estado disabled - OBLIGATORIO */
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  }
+}
+```
+
+
+---
+
+## 🔧 CASOS ESPECIALES
+
+### Animaciones (definir fuera de @layer)
+
+```css
+@keyframes sb-ui-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@layer states {
+  .sb-ui-button--loading {
+    &::after {
+      animation: sb-ui-spinner 0.6s linear infinite;
+    }
+  }
+}
+```
+
+### Pseudo-elementos (siempre anidados con &)
+
+```css
+@layer base {
+  .sb-ui-component {
+    &::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block-start: 0;
+    }
+  }
+}
+```
+
+---
+
+## 📊 ESTRUCTURA DE ARCHIVOS
+
+```
+packages/
+├── atoms/src/
+│   ├── button.css          ← Gold standard (referencia)
+│   ├── input.css
+│   ├── select.css
+│   ├── checkbox.css
+│   ├── radio.css
+│   ├── toggle.css
+│   ├── textArea.css
+│   ├── accordion.css
+│   ├── alert.css
+│   ├── breadcrumb.css
+│   ├── calendar.css
+│   ├── file-upload.css
+│   ├── menu.css
+│   ├── spinner.css
+│   ├── stepper.css
+│   ├── table.css
+│   ├── tabs.css
+│   ├── container.css       ← Layout (sin brand overrides)
+│   ├── grid.css            ← Layout
+│   ├── columns.css         ← Layout
+│   ├── gutters.css         ← Layout
+│   ├── css-grid.css        ← Layout
+│   └── index.css           ← Solo @import
+│
+├── molecules/src/
+│   ├── components/
+│   │   ├── modal/modal.ts         ← <sb-ui-modal>
+│   │   ├── toast/toast.ts         ← <sb-ui-toast>
+│   │   ├── Calendar.ts            ← <sb-ui-calendar>
+│   │   ├── DatePicker.ts          ← <sb-ui-datepicker>
+│   │   ├── alert/alert-behavior.ts
+│   │   └── file-upload/file-upload-behavior.ts
+│   └── index.ts
+│
+├── brand-overrides/src/
+│   ├── seguros-bolivar/
+│   │   ├── base.css        ← Variables globales de la marca
+│   │   ├── button.css
+│   │   ├── input.css
+│   │   ├── select.css
+│   │   ├── textarea.css
+│   │   ├── toggle.css
+│   │   ├── accordion.css
+│   │   ├── alert.css
+│   │   ├── breadcrumb.css
+│   │   ├── calendar.css
+│   │   ├── file-upload.css
+│   │   ├── spinner.css
+│   │   ├── table.css
+│   │   ├── tabs.css
+│   │   └── index.css
+│   ├── davivienda/
+│   │   ├── button.css
+│   │   ├── input.css
+│   │   ├── textarea.css
+│   │   ├── toggle.css
+│   │   └── index.css
+│   └── [cien-cuadras|doctor-aki|jelpit|white-label]/
+│       └── (misma estructura que davivienda)
+```
+
+
+---
+
+## ✅ CHECKLIST ANTES DE FINALIZAR
+
+- [ ] ✅ Declaración de `@layer` correcta al inicio del archivo
+- [ ] ✅ Todas las clases tienen prefijo `sb-ui-`
+- [ ] ✅ Todas las variables tienen prefijo `--sb-ui-`
+- [ ] ✅ Usa CSS Nesting con `&` (no repites selectores)
+- [ ] ✅ Usa SOLO Logical Properties (inline-size, padding-inline, etc.)
+- [ ] ✅ NO usas physical properties (width, padding-left, etc.)
+- [ ] ✅ Usa `clamp()` para todos los tamaños responsive
+- [ ] ✅ Define variables para todos los estados: default, hover, active, disabled, disabled-hover
+- [ ] ✅ Incluye `:hover:not(:disabled):not(.sb-ui-[component]--disabled)`
+- [ ] ✅ Incluye `:active:not(:disabled):not(.sb-ui-[component]--disabled)`
+- [ ] ✅ Incluye `:focus-visible` con outline visible (3px solid secondary-L100)
+- [ ] ✅ Incluye estado `:disabled` y clase `.sb-ui-[component]--disabled`
+- [ ] ✅ Incluye `:disabled:hover` con variables `-disabled-hover` (fallback a `-disabled`)
+- [ ] ✅ Incluye `@media (prefers-reduced-motion: reduce)`
+- [ ] ✅ Incluye `@media (prefers-contrast: high)`
+- [ ] ✅ Máximo 3 niveles de nesting
+- [ ] ✅ Transiciones NO incluyen outline (evita destellos en focus)
+- [ ] ✅ `@keyframes` definidos fuera de `@layer`
+
+---
+
+## 🚀 WORKFLOW PARA CREAR COMPONENTE
+
+1. Copiar template base de arriba
+2. Reemplazar `[component]` con el nombre del componente
+3. Definir variables en `@layer tokens`
+4. Estilos base en `@layer base`
+5. Variantes en `@layer variants`
+6. Tamaños en `@layer sizes`
+7. Modifiers en `@layer modifiers`
+8. Estados en `@layer states`
+9. Accesibilidad en `@layer utilities`
+10. Verificar checklist
+
+---
+
+## 📚 EJEMPLOS DE REFERENCIA
+
+- `packages/atoms/src/button.css` - Componente completo (gold standard)
+- `packages/brand-overrides/src/seguros-bolivar/button.css` - Ejemplo de override con @layer brand-overrides
+
+
+---
+
+## 🎨 ESTILOS CORPORATIVOS - TABS TRACK (Seguros Bolívar)
+
+### Colores Corporativos del Tab Track
+
+La variante **Track** de los tabs tiene colores corporativos específicos que DEBEN respetarse:
+
+#### Estados del Tab:
+
+**Estado Normal (sin seleccionar):**
+- Fondo: `#FFFFFF` (blanco) → `var(--sb-ui-color-grayscale-white)`
+- Título: Color por defecto del sistema
+- Descripción: `#757575` (gris medio) → `var(--sb-ui-color-grayscale-D100)`
+- Línea inferior: `#B9B9B9` (gris claro) → `var(--sb-ui-color-grayscale-L100)`
+
+**Estado Hover:**
+- Fondo: `#F2F9F6` (verde muy claro) → `var(--sb-ui-color-primary-L400)`
+- Título: `#038450` (verde oscuro) → `var(--sb-ui-color-primary-D100)`
+- Descripción: `#757575` (gris medio) → `var(--sb-ui-color-grayscale-D100)`
+- Línea inferior: `#009056` (verde) → `var(--sb-ui-color-primary-base)`
+
+**Estado Activo (seleccionado):**
+- Fondo: `#F2F9F6` (verde muy claro) → `var(--sb-ui-color-primary-L400)`
+- Título: `#038450` (verde oscuro) → `var(--sb-ui-color-primary-D100)`
+- Descripción: `#757575` (gris medio) → `var(--sb-ui-color-grayscale-D100)`
+- Línea inferior: `#009056` (verde) → `var(--sb-ui-color-primary-base)`
+
+### Implementación en Brand Overrides
+
+```css
+@layer brand-overrides {
+  [data-brand='seguros-bolivar'] .sb-ui-tabs--track {
+    /* Background */
+    --sb-ui-tabs-bg-color: var(--sb-ui-color-grayscale-white, #ffffff);
+    --sb-ui-tabs-bg-hover: var(--sb-ui-color-primary-L400, #f2f9f6);
+    --sb-ui-tabs-bg-active: var(--sb-ui-color-primary-L400, #f2f9f6);
+
+    /* Text - Título */
+    --sb-ui-tabs-text-color: var(--sb-ui-color-grayscale-D200);
+    --sb-ui-tabs-text-hover: var(--sb-ui-color-primary-D100, #038450);
+    --sb-ui-tabs-text-active: var(--sb-ui-color-primary-D100, #038450);
+
+    /* Text - Descripción */
+    --sb-ui-tabs-description-color: var(--sb-ui-color-grayscale-D100, #757575);
+
+    /* Border - Línea inferior */
+    --sb-ui-tabs-border-color: var(--sb-ui-color-grayscale-L100, #b9b9b9);
+    --sb-ui-tabs-border-active: var(--sb-ui-color-primary-base, #009056);
+  }
+}
+```
+
+**Nota:** El título y la descripción están centrados horizontalmente con `text-align: center` y `align-items: center`.
+
+### HTML de Ejemplo
+
+```html
+<div class="sb-ui-tabs sb-ui-tabs--track" role="tablist">
+  <button class="sb-ui-tabs__item sb-ui-tabs__item--active" role="tab" aria-selected="true">
+    <span class="sb-ui-tabs__title">General</span>
+    <span class="sb-ui-tabs__description">Información general</span>
+  </button>
+  <button class="sb-ui-tabs__item" role="tab" aria-selected="false">
+    <span class="sb-ui-tabs__title">Contacto</span>
+    <span class="sb-ui-tabs__description">Datos de contacto</span>
+  </button>
+</div>
+```
+
+
+---
+
+## 🎯 RECORDATORIOS FINALES
+
+1. **NUNCA** uses physical properties (width, height, left, padding-left, etc.)
+2. **SIEMPRE** usa `clamp()` para valores responsive
+3. **SIEMPRE** usa CSS Nesting con `&`
+4. **SIEMPRE** usa prefijos `--sb-ui-` para variables CSS
+5. **SIEMPRE** usa prefijos `sb-ui-` para clases CSS
+6. **SIEMPRE** incluye los 4 elementos de accesibilidad
+7. **SIEMPRE** define variables para TODOS los estados (default, hover, active, disabled, disabled-hover)
+8. **SIEMPRE** usa `:not(:disabled):not(.sb-ui-[component]--disabled)` en hover y active
+9. **SIEMPRE** incluye estado disabled con clase `.sb-ui-[component]--disabled`
+10. **SIEMPRE** incluye `:disabled:hover` con variables `-disabled-hover` (fallback a `-disabled` si no se define)
+11. **SIEMPRE** usa `@layer` con las capas correctas según el componente
+12. **SIEMPRE** usa `@layer brand-overrides` para todos los overrides de marca
+13. **SIEMPRE** usa `outline` con `secondary-L100` en focus-visible (NO primary-L100)
+14. **NUNCA** incluyas `outline` en transiciones (evita destellos en focus)
+15. **NUNCA** uses `!important` (excepto en @layer utilities cuando sea necesario)
+16. **NUNCA** repitas selectores (usa nesting)
+17. **NUNCA** definas `@keyframes` dentro de `@layer`
+
+---
+
+**Última actualización:** 2026-03-02
+**Versión:** 3.3.0 - Template corregido: @layer completo, sin !important en disabled-hover, estructura de archivos actualizada
