@@ -1,9 +1,7 @@
 import {
   forwardRef,
   useRef,
-  useEffect,
   useImperativeHandle,
-  useCallback,
   type ReactNode,
 } from 'react';
 
@@ -22,11 +20,11 @@ export interface SbSelectProps {
   'data-testid'?: string;
 }
 
-export const SbSelect = forwardRef<HTMLElement, SbSelectProps>(
+export const SbSelect = forwardRef<HTMLSelectElement, SbSelectProps>(
   (
     {
       value,
-      placeholder,
+      placeholder: _placeholder,
       disabled,
       error,
       errorMessage,
@@ -40,69 +38,46 @@ export const SbSelect = forwardRef<HTMLElement, SbSelectProps>(
     },
     ref,
   ) => {
-    const innerRef = useRef<HTMLElement>(null);
+    const innerRef = useRef<HTMLSelectElement>(null);
 
-    useImperativeHandle(ref, () => {
-      const el = innerRef.current!;
-      return Object.assign(el, {
-        get value() {
-          return (el as unknown as HTMLSelectElement).value ?? '';
-        },
-        set value(v: string) {
-          (el as unknown as HTMLSelectElement).value = v;
-        },
-        focus() {
-          el.focus();
-        },
-      });
-    });
+    useImperativeHandle(ref, () => innerRef.current as HTMLSelectElement);
 
-    const handleChange = useCallback(
-      (e: Event) => {
-        const val =
-          (e as CustomEvent).detail?.value ??
-          (e.target as HTMLSelectElement)?.value ??
-          '';
-        onChange?.(val);
-      },
-      [onChange],
-    );
+    const selectClassName = [
+      'sb-ui-select',
+      error ? 'sb-ui-select--error' : '',
+      className ?? '',
+    ]
+      .filter(Boolean)
+      .join(' ');
 
-    const handleBlur = useCallback(() => {
-      onBlur?.();
-    }, [onBlur]);
-
-    useEffect(() => {
-      const el = innerRef.current;
-      if (!el) return;
-
-      el.addEventListener('sb-change', handleChange);
-      el.addEventListener('change', handleChange);
-      el.addEventListener('blur', handleBlur);
-
-      return () => {
-        el.removeEventListener('sb-change', handleChange);
-        el.removeEventListener('change', handleChange);
-        el.removeEventListener('blur', handleBlur);
-      };
-    }, [handleChange, handleBlur]);
-
-    return (
-      <sb-ui-select
+    const selectElement = (
+      <select
         ref={innerRef}
         value={value}
-        placeholder={placeholder}
-        disabled={disabled || undefined}
-        error={error || undefined}
-        error-message={errorMessage}
-        label={label}
+        disabled={disabled}
         name={name}
-        className={className}
+        className={selectClassName}
         data-testid={dataTestId}
+        onChange={(e) => onChange?.(e.target.value)}
+        onBlur={() => onBlur?.()}
       >
         {children}
-      </sb-ui-select>
+      </select>
     );
+
+    if (label || errorMessage) {
+      return (
+        <div className="sb-ui-input-container">
+          {label && <label className="sb-ui-input-label">{label}</label>}
+          {selectElement}
+          {errorMessage && (
+            <span className="sb-ui-input-helper">{errorMessage}</span>
+          )}
+        </div>
+      );
+    }
+
+    return selectElement;
   },
 );
 

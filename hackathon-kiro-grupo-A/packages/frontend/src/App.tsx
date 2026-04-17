@@ -33,8 +33,8 @@ function App() {
           <Route path="/admin/apis" element={<ApiManagement />} />
         </Route>
 
-        {/* Catch-all → login */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Catch-all → catalog */}
+        <Route path="*" element={<Navigate to="/catalog" replace />} />
       </Routes>
     </AuthProvider>
   );

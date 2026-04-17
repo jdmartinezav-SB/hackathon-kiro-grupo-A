@@ -56,9 +56,9 @@ export const SbButton = forwardRef<HTMLElement, SbButtonProps>(
       const el = innerRef.current;
       if (!el) return;
 
-      el.addEventListener('click', handleClick);
+      el.addEventListener('click', handleClick, { capture: true });
       return () => {
-        el.removeEventListener('click', handleClick);
+        el.removeEventListener('click', handleClick, { capture: true });
       };
     }, [handleClick]);
 
