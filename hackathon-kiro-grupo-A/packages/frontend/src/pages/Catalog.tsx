@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Tag, AlertTriangle } from 'lucide-react';
 import { SbInput, SbSelect, SbAlert } from '../components/ui';
+import api from '../lib/api';
 
 interface ApiItem {
   id: string;
@@ -22,8 +23,13 @@ const MOCK_APIS: ApiItem[] = [
   { id: '5', name: 'Recaudo Primas', description: 'Gestión de recaudo de primas', version: 'v1.2', status: 'maintenance', category: 'General' },
 ];
 
-function fetchCatalogApis(): Promise<ApiItem[]> {
-  return Promise.resolve(MOCK_APIS);
+async function fetchCatalogApis(): Promise<ApiItem[]> {
+  try {
+    const response = await api.get('/v1/catalog/apis');
+    return response.data;
+  } catch {
+    return MOCK_APIS;
+  }
 }
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {

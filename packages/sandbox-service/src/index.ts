@@ -1,112 +1,75 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { v4 as uuidv4 } from 'uuid';
-import pool from './config/db';
-import { sandboxExecuteHandler } from './sandbox-execute';
-import { sandboxHistoryHandler } from './sandbox-history';
-import { sandboxExampleHandler } from './sandbox-example';
-import { gatewayProxyHandler } from './gateway-proxy';
+import { correlationIdMiddleware } from './middleware/correlation-id';
+import { errorHandler } from './middleware/error-handler';
+import sandboxRoutes from './routes/sandbox.routes';
+import pool from './config/database';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3003', 10);
+const SERVICE_NAME = 'sandbox-service';
 
-/* ─── Structured Logger ─── */
-interface LogEntry {
-  timestamp: string;
-  level: string;
-  service: string;
-  correlationId?: string;
-  message: string;
-}
+// Security & parsing
+app.use(helmet());
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(express.json());
 
-function log(level: string, message: string, correlationId?: string): void {
-  const entry: LogEntry = {
+// Correlation-ID
+app.use(correlationIdMiddleware);
+
+// Request logger — JSON structured logs
+app.use((req: Request, _res, next) => {
+  const log = {
     timestamp: new Date().toISOString(),
-    level,
-    service: 'sandbox-service',
-    correlationId,
-    message,
+    level: 'info',
+    service: SERVICE_NAME,
+    correlationId: req.correlationId,
+    message: `${req.method} ${req.originalUrl}`,
   };
-  process.stdout.write(JSON.stringify(entry) + '\n');
-}
-
-/* ─── Middleware: Correlation-ID ─── */
-declare global {
-  namespace Express {
-    interface Request {
-      correlationId: string;
-    }
-  }
-}
-
-app.use((req: Request, res: Response, next: NextFunction) => {
-  const correlationId =
-    (req.headers['x-correlation-id'] as string) || uuidv4();
-  req.correlationId = correlationId;
-  res.setHeader('x-correlation-id', correlationId);
+  console.log(JSON.stringify(log));
   next();
 });
 
-/* ─── Global Middleware ─── */
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
-
-/* ─── Health Check ─── */
+// Health check
 app.get('/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok', service: 'sandbox-service', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', service: SERVICE_NAME, timestamp: new Date().toISOString() });
 });
 
-/* ─── Route Placeholders (implemented in later tasks) ─── */
-app.post('/v1/sandbox/execute', sandboxExecuteHandler);
+// Routes
+app.use(sandboxRoutes);
 
-app.get('/v1/sandbox/history/:appId', sandboxHistoryHandler);
+// Centralized error handler
+app.use(errorHandler);
 
-app.get('/v1/sandbox/apis/:apiId/example', sandboxExampleHandler);
+// Start server
+const server = app.listen(PORT, () => {
+  const log = {
+    timestamp: new Date().toISOString(),
+    level: 'info',
+    service: SERVICE_NAME,
+    message: `Server running on port ${PORT}`,
+  };
+  console.log(JSON.stringify(log));
+});
 
-app.all('/v1/gateway/proxy/:apiId/:version/*', gatewayProxyHandler);
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  const log = {
+    timestamp: new Date().toISOString(),
+    level: 'info',
+    service: SERVICE_NAME,
+    message: 'SIGTERM received — shutting down gracefully',
+  };
+  console.log(JSON.stringify(log));
 
-/* ─── Centralized Error Handler ─── */
-app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
-  log('error', err.message, req.correlationId);
-  res.status(500).json({
-    error: 'Internal Server Error',
-    correlationId: req.correlationId,
+  server.close(async () => {
+    await pool.end();
+    process.exit(0);
   });
 });
 
-/* ─── Server Start & Graceful Shutdown ─── */
-let server: ReturnType<typeof app.listen> | null = null;
-
-function startServer(): ReturnType<typeof app.listen> {
-  server = app.listen(PORT, () => {
-    log('info', `Sandbox service running on port ${PORT}`);
-  });
-  return server;
-}
-
-function gracefulShutdown(signal: string): void {
-  log('info', `Received ${signal}. Shutting down gracefully...`);
-  if (server) {
-    server.close(async () => {
-      log('info', 'HTTP server closed');
-      await pool.end();
-      log('info', 'Database pool closed');
-      process.exit(0);
-    });
-  }
-}
-
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-/* Start only when run directly (not imported for testing) */
-if (require.main === module) {
-  startServer();
-}
-
-export { app, startServer };
+export default app;

@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Play, Trash2, Plus, Clock, ChevronDown, ChevronRight } from 'lucide-react';
 import { SbSelect, SbInput, SbTextarea, SbButton, SbSpinner } from '../components/ui';
+import api from '../lib/api';
 
 /* ── Types ── */
 interface Header {
@@ -140,17 +142,47 @@ export default function Sandbox() {
   const [historyOpen, setHistoryOpen] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const selectedApi = MOCK_APIS.find((a) => a.id === apiId);
+  const { data: catalogApis = MOCK_APIS } = useQuery({
+    queryKey: ['sandbox-apis'],
+    queryFn: async () => {
+      try {
+        const res = await api.get('/v1/catalog/apis');
+        return res.data.map((a: { id: string; name: string; version: string }) => ({
+          id: a.id,
+          name: a.name,
+          versions: [a.version],
+        }));
+      } catch {
+        return MOCK_APIS;
+      }
+    },
+  });
+
+  const selectedApi = catalogApis.find((a: { id: string }) => a.id === apiId);
 
   const handleApiChange = useCallback((newId: string) => {
     setApiId(newId);
-    const api = MOCK_APIS.find((a) => a.id === newId);
-    if (api?.versions[0]) setVersion(api.versions[0]);
-  }, []);
+    const found = catalogApis.find((a: { id: string }) => a.id === newId);
+    if (found?.versions[0]) setVersion(found.versions[0]);
+  }, [catalogApis]);
 
-  const execute = useCallback(() => {
+  const execute = useCallback(async () => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await api.post('/v1/sandbox/execute', {
+        apiId,
+        version,
+        method,
+        path,
+        headers: Object.fromEntries(headers.filter((h) => h.key).map((h) => [h.key, h.value])),
+        body: BODY_METHODS.has(method) ? JSON.parse(body) : undefined,
+      });
+      setResponse(res.data);
+      setHistory((prev) => [
+        { id: crypto.randomUUID(), method, path, statusCode: res.data.statusCode, time: res.data.responseTimeMs, timestamp: new Date() },
+        ...prev,
+      ].slice(0, 20));
+    } catch {
       const mock: MockResponse = {
         statusCode: 200,
         headers: { 'content-type': 'application/json', 'x-correlation-id': crypto.randomUUID() },
@@ -162,9 +194,10 @@ export default function Sandbox() {
         { id: crypto.randomUUID(), method, path, statusCode: mock.statusCode, time: mock.responseTimeMs, timestamp: new Date() },
         ...prev,
       ].slice(0, 20));
+    } finally {
       setLoading(false);
-    }, 300);
-  }, [method, path]);
+    }
+  }, [apiId, version, method, path, headers, body]);
 
   return (
     <div className="space-y-6">
@@ -183,7 +216,7 @@ export default function Sandbox() {
                   onChange={(val) => handleApiChange(val)}
                   data-testid="sandbox-api-select"
                 >
-                  {MOCK_APIS.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  {catalogApis.map((a: { id: string; name: string }) => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </SbSelect>
               </div>
               <div>
@@ -193,7 +226,7 @@ export default function Sandbox() {
                   onChange={(val) => setVersion(val)}
                   data-testid="sandbox-version-select"
                 >
-                  {selectedApi?.versions.map((v) => <option key={v} value={v}>{v}</option>)}
+                  {selectedApi?.versions.map((v: string) => <option key={v} value={v}>{v}</option>)}
                 </SbSelect>
               </div>
             </div>

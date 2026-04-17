@@ -1,309 +1,378 @@
-import { Router, Request, Response } from 'express';
-import {
-  apiDefinitions,
-  apiVersions,
-  sunsetPlans,
-  subscriptionPlans,
-  subscriptionApis,
-  consumers,
-} from '../data/store';
-import { parse } from '../parser';
-import { generateSnippet } from '../snippets';
+import { Router, Request, Response, NextFunction } from 'express';
+import pool from '../config/database';
+import { authJwt } from '../middleware/auth';
+import { AppError } from '../middleware/error-handler';
+import { generateSnippet } from '../snippets/generator';
 
 const router = Router();
 
-// ---------------------------------------------------------------------------
-// Response types
-// ---------------------------------------------------------------------------
+const SUPPORTED_SNIPPET_LANGS = ['curl', 'javascript', 'python', 'java'];
 
-interface ApiSummary {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  status: string;
-  currentVersion: string | null;
-  deprecationBadge: boolean;
-  sunsetDate: string | null;
-}
+/**
+ * GET /v1/catalog/apis
+ * List all API definitions with latest version and sunset info.
+ * Query params: search, category, status
+ */
+router.get(
+  '/v1/catalog/apis',
+  authJwt,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { search, category, status } = req.query;
 
-interface CatalogApiResponse {
-  apis: ApiSummary[];
-  total: number;
-  filters: {
-    profiles: string[];
-    statuses: string[];
-    categories: string[];
-  };
-}
+      const conditions: string[] = [];
+      const params: unknown[] = [];
+      let paramIndex = 1;
 
-// ---------------------------------------------------------------------------
-// GET /v1/catalog/apis
-// ---------------------------------------------------------------------------
-
-router.get('/', (req: Request, res: Response): void => {
-  const {
-    profile,
-    status,
-    search,
-    category,
-    page: pageParam,
-    pageSize: pageSizeParam,
-  } = req.query;
-
-  const consumerId = req.headers['x-consumer-id'] as string | undefined;
-
-  const page = Math.max(1, parseInt(pageParam as string, 10) || 1);
-  const pageSize = Math.min(100, Math.max(1, parseInt(pageSizeParam as string, 10) || 20));
-
-  let filtered = [...apiDefinitions];
-
-  // --- Filter by business_profile ---
-  if (typeof profile === 'string' && profile.trim().length > 0) {
-    const profileLower = profile.toLowerCase();
-    const matchingPlans = subscriptionPlans.filter((p) =>
-      p.profiles.some((pr) => pr.toLowerCase() === profileLower),
-    );
-    const planIds = matchingPlans.map((p) => p.id);
-    const allowedVersionIds = subscriptionApis
-      .filter((sa) => planIds.includes(sa.plan_id))
-      .map((sa) => sa.api_version_id);
-    const allowedApiDefIds = apiVersions
-      .filter((v) => allowedVersionIds.includes(v.id))
-      .map((v) => v.api_definition_id);
-    const uniqueApiDefIds = [...new Set(allowedApiDefIds)];
-    filtered = filtered.filter((api) => uniqueApiDefIds.includes(api.id));
-  }
-
-  // --- Filter by consumer subscription plan ---
-  if (typeof consumerId === 'string' && consumerId.trim().length > 0) {
-    const consumer = consumers.find((c) => c.id === consumerId);
-    if (consumer?.plan_id) {
-      const allowedVersionIds = subscriptionApis
-        .filter((sa) => sa.plan_id === consumer.plan_id)
-        .map((sa) => sa.api_version_id);
-      const allowedApiDefIds = apiVersions
-        .filter((v) => allowedVersionIds.includes(v.id))
-        .map((v) => v.api_definition_id);
-      const uniqueApiDefIds = [...new Set(allowedApiDefIds)];
-      filtered = filtered.filter((api) => uniqueApiDefIds.includes(api.id));
-    }
-  }
-
-  // --- Filter by status ---
-  if (typeof status === 'string' && status.trim().length > 0) {
-    const statusLower = status.toLowerCase();
-    filtered = filtered.filter((api) => api.status === statusLower);
-  }
-
-  // --- Text search on name/description ---
-  if (typeof search === 'string' && search.trim().length > 0) {
-    const searchLower = search.toLowerCase();
-    filtered = filtered.filter(
-      (api) =>
-        api.name.toLowerCase().includes(searchLower) ||
-        api.description.toLowerCase().includes(searchLower),
-    );
-  }
-
-  // --- Filter by category ---
-  if (typeof category === 'string' && category.trim().length > 0) {
-    const categoryLower = category.toLowerCase();
-    filtered = filtered.filter((api) => api.category.toLowerCase() === categoryLower);
-  }
-
-  // --- Build summaries with deprecation badge + sunset date ---
-  const total = filtered.length;
-  const start = (page - 1) * pageSize;
-  const paginated = filtered.slice(start, start + pageSize);
-
-  const apis: ApiSummary[] = paginated.map((api) => {
-    const latestVersion = apiVersions
-      .filter((v) => v.api_definition_id === api.id)
-      .sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime())[0];
-
-    const isDeprecated = api.status === 'deprecated' || latestVersion?.status === 'deprecated';
-
-    let sunsetDate: string | null = null;
-    if (latestVersion) {
-      const sunset = sunsetPlans.find((sp) => sp.api_version_id === latestVersion.id);
-      if (sunset) {
-        sunsetDate = sunset.sunset_date;
+      if (search && typeof search === 'string' && search.trim()) {
+        conditions.push(
+          `(ad.name ILIKE $${paramIndex} OR ad.description ILIKE $${paramIndex})`
+        );
+        params.push(`%${search.trim()}%`);
+        paramIndex++;
       }
+
+      if (category && typeof category === 'string' && category.trim()) {
+        conditions.push(`ad.category = $${paramIndex}`);
+        params.push(category.trim());
+        paramIndex++;
+      }
+
+      if (status && typeof status === 'string' && status.trim()) {
+        conditions.push(`ad.status = $${paramIndex}`);
+        params.push(status.trim());
+        paramIndex++;
+      }
+
+      const whereClause =
+        conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+      const query = `
+        SELECT
+          ad.id,
+          ad.name,
+          ad.description,
+          ad.category,
+          ad.status::text,
+          lv.version_tag,
+          sp.sunset_date
+        FROM api_definition ad
+        LEFT JOIN LATERAL (
+          SELECT av.version_tag, av.id AS version_id
+          FROM api_version av
+          WHERE av.api_definition_id = ad.id
+          ORDER BY av.published_at DESC
+          LIMIT 1
+        ) lv ON true
+        LEFT JOIN sunset_plan sp ON sp.api_version_id = lv.version_id
+        ${whereClause}
+        ORDER BY ad.name ASC
+      `;
+
+      const result = await pool.query(query, params);
+
+      const apis = result.rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        version: row.version_tag || null,
+        status: row.status,
+        category: row.category,
+        sunsetDate: row.sunset_date
+          ? new Date(row.sunset_date).toISOString().split('T')[0]
+          : null,
+      }));
+
+      res.json(apis);
+    } catch (error) {
+      next(error);
     }
+  }
+);
 
-    return {
-      id: api.id,
-      name: api.name,
-      description: api.description,
-      category: api.category,
-      status: api.status,
-      currentVersion: latestVersion?.version_tag ?? null,
-      deprecationBadge: isDeprecated,
-      sunsetDate,
-    };
-  });
+/**
+ * GET /v1/catalog/apis/:id
+ * Get API definition detail with versions and sunset info.
+ */
+router.get(
+  '/v1/catalog/apis/:id',
+  authJwt,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
 
-  // --- Build available filter values (from full dataset, not filtered) ---
-  const allCategories = [...new Set(apiDefinitions.map((a) => a.category))];
-  const allStatuses = [...new Set(apiDefinitions.map((a) => a.status))];
-  const allProfiles = [...new Set(subscriptionPlans.flatMap((p) => p.profiles))];
+      const defResult = await pool.query(
+        `SELECT id, name, description, category, status::text FROM api_definition WHERE id = $1`,
+        [id]
+      );
 
-  const response: CatalogApiResponse = {
-    apis,
-    total,
-    filters: {
-      profiles: allProfiles,
-      statuses: allStatuses,
-      categories: allCategories,
-    },
-  };
+      if (defResult.rows.length === 0) {
+        throw new AppError(404, 'NOT_FOUND', 'API definition not found');
+      }
 
-  res.status(200).json(response);
-});
+      const definition = defResult.rows[0];
 
-// ---------------------------------------------------------------------------
-// GET /v1/catalog/apis/:id/docs
-// ---------------------------------------------------------------------------
+      const versionsResult = await pool.query(
+        `SELECT id, version_tag, status::text, published_at
+         FROM api_version
+         WHERE api_definition_id = $1
+         ORDER BY published_at DESC`,
+        [id]
+      );
 
-router.get('/:id/docs', (req: Request, res: Response): void => {
-  const { id } = req.params;
+      const versions = versionsResult.rows.map((row) => ({
+        id: row.id,
+        versionTag: row.version_tag,
+        status: row.status,
+        publishedAt: row.published_at,
+      }));
 
-  const apiDef = apiDefinitions.find((a) => a.id === id);
-  if (!apiDef) {
-    res.status(404).json({ error: 'API not found' });
-    return;
+      // Get sunset plan from the latest version that has one
+      const sunsetResult = await pool.query(
+        `SELECT sp.sunset_date, sp.migration_guide_url
+         FROM sunset_plan sp
+         JOIN api_version av ON av.id = sp.api_version_id
+         WHERE av.api_definition_id = $1
+         ORDER BY sp.created_at DESC
+         LIMIT 1`,
+        [id]
+      );
+
+      const sunset = sunsetResult.rows[0];
+
+      res.json({
+        id: definition.id,
+        name: definition.name,
+        description: definition.description,
+        category: definition.category,
+        status: definition.status,
+        versions,
+        sunsetDate: sunset?.sunset_date
+          ? new Date(sunset.sunset_date).toISOString().split('T')[0]
+          : null,
+        migrationGuideUrl: sunset?.migration_guide_url || null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /v1/catalog/apis/:id/docs
+ * Parse the latest active OpenAPI spec and return structured docs.
+ */
+router.get(
+  '/v1/catalog/apis/:id/docs',
+  authJwt,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      const versionResult = await pool.query(
+        `SELECT openapi_spec, format
+         FROM api_version
+         WHERE api_definition_id = $1 AND status = 'active'
+         ORDER BY published_at DESC
+         LIMIT 1`,
+        [id]
+      );
+
+      if (versionResult.rows.length === 0) {
+        throw new AppError(
+          404,
+          'NOT_FOUND',
+          'No active version found for this API'
+        );
+      }
+
+      const { openapi_spec, format } = versionResult.rows[0];
+
+      let spec: Record<string, unknown>;
+      if (format === 'yaml') {
+        const yaml = await import('js-yaml');
+        spec = yaml.load(openapi_spec) as Record<string, unknown>;
+      } else {
+        spec = JSON.parse(openapi_spec);
+      }
+
+      const info = spec.info as Record<string, string> | undefined;
+      const paths = spec.paths as Record<
+        string,
+        Record<string, unknown>
+      > | undefined;
+      const components = spec.components as Record<
+        string,
+        unknown
+      > | undefined;
+
+      const endpoints: Array<{
+        path: string;
+        method: string;
+        summary: string;
+        parameters: unknown[];
+        requestBody: unknown;
+        responses: unknown;
+      }> = [];
+
+      if (paths) {
+        for (const [pathKey, methods] of Object.entries(paths)) {
+          for (const [method, details] of Object.entries(methods)) {
+            const operation = details as Record<string, unknown>;
+            endpoints.push({
+              path: pathKey,
+              method: method.toUpperCase(),
+              summary: (operation.summary as string) || '',
+              parameters: (operation.parameters as unknown[]) || [],
+              requestBody: operation.requestBody || null,
+              responses: operation.responses || {},
+            });
+          }
+        }
+      }
+
+      res.json({
+        title: info?.title || '',
+        version: info?.version || '',
+        description: info?.description || '',
+        endpoints,
+        schemas: (components as Record<string, unknown>)?.schemas || {},
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /v1/catalog/apis/:id/snippets/:lang
+ * Generate code snippet for the first endpoint of the latest active version.
+ */
+router.get(
+  '/v1/catalog/apis/:id/snippets/:lang',
+  authJwt,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id as string;
+      const lang = req.params.lang as string;
+
+      if (!SUPPORTED_SNIPPET_LANGS.includes(lang)) {
+        throw new AppError(
+          400,
+          'UNSUPPORTED_LANGUAGE',
+          `Supported languages: ${SUPPORTED_SNIPPET_LANGS.join(', ')}`
+        );
+      }
+
+      const versionResult = await pool.query(
+        `SELECT openapi_spec, format
+         FROM api_version
+         WHERE api_definition_id = $1 AND status = 'active'
+         ORDER BY published_at DESC
+         LIMIT 1`,
+        [id]
+      );
+
+      if (versionResult.rows.length === 0) {
+        throw new AppError(
+          404,
+          'NOT_FOUND',
+          'No active version found for this API'
+        );
+      }
+
+      const { openapi_spec, format } = versionResult.rows[0];
+
+      let spec: Record<string, unknown>;
+      if (format === 'yaml') {
+        const yaml = await import('js-yaml');
+        spec = yaml.load(openapi_spec) as Record<string, unknown>;
+      } else {
+        spec = JSON.parse(openapi_spec);
+      }
+
+      const paths = spec.paths as Record<
+        string,
+        Record<string, unknown>
+      > | undefined;
+
+      if (!paths || Object.keys(paths).length === 0) {
+        throw new AppError(404, 'NO_ENDPOINTS', 'No endpoints found in spec');
+      }
+
+      // Take the first endpoint
+      const firstPath = Object.keys(paths)[0];
+      const methods = paths[firstPath];
+      const firstMethod = Object.keys(methods)[0];
+      const operation = methods[firstMethod] as Record<string, unknown>;
+
+      // Extract example body from requestBody schema if present
+      let exampleBody: object | undefined;
+      const requestBody = operation.requestBody as Record<
+        string,
+        unknown
+      > | undefined;
+      if (requestBody) {
+        const content = requestBody.content as Record<
+          string,
+          unknown
+        > | undefined;
+        const jsonContent = content?.['application/json'] as Record<
+          string,
+          unknown
+        > | undefined;
+        const schema = jsonContent?.schema as Record<
+          string,
+          unknown
+        > | undefined;
+        if (schema?.properties) {
+          const props = schema.properties as Record<
+            string,
+            Record<string, unknown>
+          >;
+          exampleBody = buildExampleFromProperties(props);
+        }
+      }
+
+      const snippet = generateSnippet(
+        lang,
+        firstMethod,
+        firstPath,
+        exampleBody
+      );
+
+      res.json({ language: lang, snippet });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * Build a simple example object from OpenAPI schema properties.
+ */
+function buildExampleFromProperties(
+  properties: Record<string, Record<string, unknown>>
+): object {
+  const example: Record<string, unknown> = {};
+
+  for (const [key, prop] of Object.entries(properties)) {
+    if (prop.enum && Array.isArray(prop.enum)) {
+      example[key] = prop.enum[0];
+    } else if (prop.type === 'string') {
+      example[key] = prop.example || `example_${key}`;
+    } else if (prop.type === 'integer' || prop.type === 'number') {
+      example[key] = prop.example || 0;
+    } else if (prop.type === 'boolean') {
+      example[key] = true;
+    } else if (prop.type === 'array') {
+      example[key] = [];
+    } else if (prop.type === 'object') {
+      example[key] = {};
+    }
   }
 
-  const latestVersion = apiVersions
-    .filter((v) => v.api_definition_id === id && v.status === 'active')
-    .sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime())[0];
-
-  if (!latestVersion) {
-    res.status(404).json({ error: 'No active versions found for this API' });
-    return;
-  }
-
-  const parseResult = parse(latestVersion.openapi_spec, latestVersion.format);
-  if (!parseResult.success || !parseResult.model) {
-    res.status(500).json({ error: 'Failed to parse OpenAPI spec', details: parseResult.errors });
-    return;
-  }
-
-  const { model } = parseResult;
-
-  res.status(200).json({
-    apiId: apiDef.id,
-    apiName: apiDef.name,
-    version: latestVersion.version_tag,
-    openapi: model.openapi,
-    info: model.info,
-    servers: model.servers,
-    resources: model.paths,
-    schemas: model.schemas,
-  });
-});
-
-// ---------------------------------------------------------------------------
-// GET /v1/catalog/apis/:id/snippets/:lang
-// ---------------------------------------------------------------------------
-
-const SUPPORTED_LANGUAGES = ['javascript', 'python', 'java', 'curl'] as const;
-type SnippetLanguage = (typeof SUPPORTED_LANGUAGES)[number];
-
-router.get('/:id/snippets/:lang', (req: Request, res: Response): void => {
-  const { id, lang } = req.params;
-
-  if (!SUPPORTED_LANGUAGES.includes(lang as SnippetLanguage)) {
-    res.status(400).json({
-      error: `Unsupported language: ${lang}. Supported: ${SUPPORTED_LANGUAGES.join(', ')}`,
-    });
-    return;
-  }
-
-  const apiDef = apiDefinitions.find((a) => a.id === id);
-  if (!apiDef) {
-    res.status(404).json({ error: 'API not found' });
-    return;
-  }
-
-  const latestVersion = apiVersions
-    .filter((v) => v.api_definition_id === id && v.status === 'active')
-    .sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime())[0];
-
-  if (!latestVersion) {
-    res.status(404).json({ error: 'No active versions found for this API' });
-    return;
-  }
-
-  const parseResult = parse(latestVersion.openapi_spec, latestVersion.format);
-  if (!parseResult.success || !parseResult.model) {
-    res.status(500).json({ error: 'Failed to parse OpenAPI spec', details: parseResult.errors });
-    return;
-  }
-
-  const { model } = parseResult;
-  const baseUrl = model.servers[0]?.url ?? '';
-
-  const snippets = model.paths.flatMap((group) =>
-    group.endpoints.map((ep) => ({
-      endpoint: `${ep.method} ${ep.path}`,
-      code: generateSnippet(ep, baseUrl, lang as SnippetLanguage),
-    })),
-  );
-
-  res.status(200).json({
-    apiId: apiDef.id,
-    apiName: apiDef.name,
-    version: latestVersion.version_tag,
-    language: lang,
-    snippets,
-  });
-});
-
-// ---------------------------------------------------------------------------
-// GET /v1/catalog/apis/:id
-// ---------------------------------------------------------------------------
-
-router.get('/:id', (req: Request, res: Response): void => {
-  const { id } = req.params;
-
-  const apiDef = apiDefinitions.find((a) => a.id === id);
-  if (!apiDef) {
-    res.status(404).json({ error: 'API not found' });
-    return;
-  }
-
-  const versions = apiVersions
-    .filter((v) => v.api_definition_id === id)
-    .map((v) => {
-      const sunset = sunsetPlans.find((sp) => sp.api_version_id === v.id);
-      return {
-        id: v.id,
-        version_tag: v.version_tag,
-        status: v.status,
-        format: v.format,
-        published_at: v.published_at,
-        ...(sunset && {
-          sunsetPlan: {
-            sunset_date: sunset.sunset_date,
-            migration_guide_url: sunset.migration_guide_url,
-            replacement_version_id: sunset.replacement_version_id,
-          },
-        }),
-      };
-    });
-
-  res.status(200).json({
-    id: apiDef.id,
-    name: apiDef.name,
-    description: apiDef.description,
-    category: apiDef.category,
-    status: apiDef.status,
-    created_at: apiDef.created_at,
-    updated_at: apiDef.updated_at,
-    versions,
-  });
-});
+  return example;
+}
 
 export default router;

@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { authMiddleware, requireAdmin } from '../middleware/auth.js';
-import { AppError } from '../middleware/error-handler.js';
-import pool from '../config/database.js';
+import { authMiddleware, requireAdmin } from '../middleware/auth';
+import { AppError } from '../middleware/error-handler';
+import pool from '../config/database';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';

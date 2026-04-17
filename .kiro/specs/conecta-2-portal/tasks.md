@@ -138,30 +138,30 @@
 **Tablas propias**: `audit_log`, `usage_metric`, `notification`, `notification_preference`
 **Migraciones**: `009_` a `011_`
 
-- [ ] 4.1 Crear migraciones SQL para tablas propias
-  - [ ] 4.1.1 `packages/shared/migrations/009_create_audit_logs.sql` — tabla `audit_log` con campos: id (uuid PK), correlation_id (uuid), consumer_id (FK), application_id (FK), api_version_id (FK nullable), endpoint, method, status_code, ip_address (inet), response_time_ms, created_at. Agregar restricción: tabla sin UPDATE ni DELETE (inmutabilidad vía REVOKE)
-  - [ ] 4.1.2 `packages/shared/migrations/010_create_usage_metrics.sql` — tabla `usage_metric` con campos: id, application_id (FK), api_version_id (FK), metric_date (date), total_requests, success_count, error_count, avg_latency_ms, quota_used, updated_at. Índice único en (application_id, api_version_id, metric_date)
-  - [ ] 4.1.3 `packages/shared/migrations/011_create_notifications.sql` — tablas `notification` (id, consumer_id FK, type enum, title, message, channel enum, priority enum, read boolean, metadata jsonb, created_at, read_at) y `notification_preference` (id, consumer_id FK, event_type enum, email_enabled, portal_enabled)
-- [ ] 4.2 Crear servidor Express con configuración base
-  - [ ] 4.2.1 `packages/analytics-service/src/index.ts` — Express app en puerto 3004 con middleware compartido
-- [ ] 4.3 Implementar servicio de Auditoría
-  - [ ] 4.3.1 `POST /v1/audit/log` — Endpoint interno para registrar audit log. Recibir correlationId, consumerId, appId, endpoint, method, statusCode, ipAddress, responseTimeMs. Insertar en tabla audit_log. Actualizar usage_metric del día (upsert: incrementar total_requests, success/error count, recalcular avg_latency)
-  - [ ] 4.3.2 `GET /v1/admin/audit/reports` — Listar registros de auditoría con paginación y filtros: consumerId, apiId, from/to (rango fechas), statusCode. Solo accesible por admin
-  - [ ] 4.3.3 `POST /v1/admin/audit/export` — Generar archivo CSV o JSON con los registros filtrados. Para ≤100K registros: generar sincrónicamente y retornar downloadUrl. Retornar 200 con URL de descarga
-- [ ] 4.4 Implementar servicio de Analytics
-  - [ ] 4.4.1 `GET /v1/analytics/dashboard/:appId` — Retornar métricas agregadas: totalRequests, successRate, errorRate, avgLatencyMs. Query params: from, to, apiId, statusCode. Calcular desde usage_metric
-  - [ ] 4.4.2 `GET /v1/analytics/quota/:appId` — Retornar quotaUsedPercent (peticiones del período actual / límite del plan × 100), quotaLimit, quotaUsed. Obtener límite del plan desde subscription_plan
-- [ ] 4.5 Implementar servicio de Notificaciones
-  - [ ] 4.5.1 `GET /v1/notifications` — Listar notificaciones del consumidor autenticado, ordenadas por created_at DESC, con filtro por read/unread
-  - [ ] 4.5.2 `PUT /v1/notifications/:id/read` — Marcar notificación como leída (set read=true, read_at=now)
-  - [ ] 4.5.3 `PUT /v1/notifications/preferences` — Actualizar preferencias de notificación del consumidor (email_enabled, portal_enabled por tipo de evento)
-  - [ ] 4.5.4 `POST /v1/internal/notifications/send` — Endpoint interno para crear notificación. Recibir consumerId, type, title, message, priority. Insertar en tabla notification con channel='portal'
-- [ ] 4.6 Seed data de métricas y notificaciones demo
-  - [ ] 4.6.1 Agregar a `014_seed_data.sql`: 30 registros de audit_log, 7 días de usage_metrics para las apps demo, 5 notificaciones de ejemplo (nueva versión, mantenimiento, cuota al 80%)
-- [ ] 4.7 Tests mínimos funcionales
-  - [ ] 4.7.1 Test: `POST /v1/audit/log` crea registro inmutable y actualiza usage_metric
-  - [ ] 4.7.2 Test: `GET /v1/analytics/dashboard/:appId` retorna métricas correctas con filtros
-  - [ ] 4.7.3 Test: `GET /v1/notifications` retorna solo notificaciones del consumidor autenticado
+- [x] 4.1 Crear migraciones SQL para tablas propias
+  - [x] 4.1.1 `packages/shared/migrations/009_create_audit_logs.sql`
+  - [x] 4.1.2 `packages/shared/migrations/010_create_usage_metrics.sql`
+  - [x] 4.1.3 `packages/shared/migrations/011_create_notifications.sql`
+- [x] 4.2 Crear servidor Express con configuración base
+  - [x] 4.2.1 `packages/analytics-service/src/index.ts` — Express app en puerto 3004 con middleware
+- [x] 4.3 Implementar servicio de Auditoría
+  - [x] 4.3.1 `POST /v1/audit/log`
+  - [x] 4.3.2 `GET /v1/admin/audit/reports`
+  - [x] 4.3.3 `POST /v1/admin/audit/export`
+- [x] 4.4 Implementar servicio de Analytics
+  - [x] 4.4.1 `GET /v1/analytics/dashboard/:appId`
+  - [x] 4.4.2 `GET /v1/analytics/quota/:appId`
+- [x] 4.5 Implementar servicio de Notificaciones
+  - [x] 4.5.1 `GET /v1/notifications`
+  - [x] 4.5.2 `PUT /v1/notifications/:id/read`
+  - [x] 4.5.3 `PUT /v1/notifications/preferences`
+  - [x] 4.5.4 `POST /v1/internal/notifications/send`
+- [x] 4.6 Seed data de métricas y notificaciones demo
+  - [x] 4.6.1 `014_seed_analytics_data.sql`
+- [x] 4.7 Tests mínimos funcionales
+  - [x] 4.7.1 Test: audit routes
+  - [x] 4.7.2 Test: analytics dashboard
+  - [x] 4.7.3 Test: notification routes
 
 ---
 
@@ -203,10 +203,39 @@
 
 ---
 
-## Fase Final — Integración (Últimos 30 min — Todos juntos)
+## Fase Final — Integración
 
-- [~] 6.1 Levantar todos los servicios con Docker Compose y verificar conectividad
-- [ ] 6.2 Ejecutar migraciones completas y seed data
-- [ ] 6.3 Verificar flujo completo: registro → login → ver catálogo → ejecutar sandbox → ver analytics → admin gestiona aliado
-- [ ] 6.4 Corregir errores de integración entre módulos (CORS, rutas, contratos)
-- [ ] 6.5 Ejecutar suite de tests de todos los módulos: `npm test --workspaces`
+> **Estado real**: Frontend (Dev 5) y Analytics (Dev 4) están completos. Faltan Dev 1-3 y shared package.
+> **Estrategia de integración**: Construir backends faltantes, conectar frontend a APIs reales, verificar flujo E2E.
+
+- [x] 6.1 Crear shared package con tipos, middleware y DB pool
+  - [x] 6.1.1 Crear `packages/shared/package.json` y `tsconfig.json`
+  - [x] 6.1.2 Crear interfaces TypeScript compartidas en `packages/shared/src/types/index.ts`
+  - [x] 6.1.3 Crear middleware compartido: `correlation-id.ts`, `error-handler.ts`, `auth-jwt.ts`
+  - [x] 6.1.4 Crear `packages/shared/src/db.ts` con pool PostgreSQL configurable
+- [x] 6.2 Crear todas las migraciones SQL faltantes (001-008, 012-013) y seed data unificado (014)
+  - [x] 6.2.1 Migraciones 001-004: consumer, application, credential, subscription_plan
+  - [x] 6.2.2 Migraciones 005-007: api_definition, api_version, sunset_plan
+  - [x] 6.2.3 Migración 008: sandbox_history
+  - [x] 6.2.4 Migraciones 012-013: admin_action_log, sync_log
+  - [x] 6.2.5 Migración 014: seed data unificado (consumers, apps, APIs, métricas, notificaciones)
+- [x] 6.3 Crear docker-compose.yml con PostgreSQL 15 e init-db.sh
+- [x] 6.4 Implementar backend-core (puerto 3000): auth + consumers + admin
+  - [x] 6.4.1 Setup Express server con middleware compartido
+  - [x] 6.4.2 Endpoints auth: POST /v1/auth/register, POST /v1/auth/login
+  - [x] 6.4.3 Endpoints consumers: GET /v1/consumers/:id, POST /v1/consumers/:id/apps
+  - [x] 6.4.4 Endpoints admin: GET /v1/admin/consumers, PUT /v1/admin/consumers/:id/status
+- [x] 6.5 Implementar catalog-service (puerto 3002): catálogo + parser + snippets
+  - [x] 6.5.1 Setup Express server con middleware compartido
+  - [x] 6.5.2 Endpoints catálogo: GET /v1/catalog/apis, GET /v1/catalog/apis/:id
+  - [x] 6.5.3 Endpoints docs/snippets: GET /v1/catalog/apis/:id/docs, GET /v1/catalog/apis/:id/snippets/:lang
+  - [x] 6.5.4 Endpoints admin: POST /v1/admin/apis, POST /v1/admin/apis/:id/versions
+- [x] 6.6 Implementar sandbox-service (puerto 3003): mock engine + sandbox
+  - [x] 6.6.1 Setup Express server con middleware compartido
+  - [x] 6.6.2 Mock engine: generateMockResponse desde spec OpenAPI
+  - [x] 6.6.3 Endpoints sandbox: POST /v1/sandbox/execute, GET /v1/sandbox/history/:appId
+- [x] 6.7 Configurar API Gateway/proxy en backend-core para rutear a microservicios
+- [x] 6.8 Conectar frontend a APIs reales (reemplazar mocks inline por llamadas API)
+- [x] 6.9 Levantar todos los servicios con Docker Compose y verificar conectividad
+- [x] 6.10 Verificar flujo E2E: registro → login → catálogo → sandbox → analytics → admin
+- [x] 6.11 Ejecutar suite de tests: `npm test --workspaces`

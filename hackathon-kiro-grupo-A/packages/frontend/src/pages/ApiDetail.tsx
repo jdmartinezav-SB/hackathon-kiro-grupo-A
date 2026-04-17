@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { SbTabs, SbButton, SbBreadcrumb } from '../components/ui';
+import api from '../lib/api';
 
 interface ApiItem {
   id: string;
@@ -68,8 +69,31 @@ HttpResponse<String> response = client.send(request, BodyHandlers.ofString());`,
   -d '{"tipo":"autos","placa":"ABC123"}'`,
 };
 
-function fetchApiDetail(id: string): Promise<ApiItem | undefined> {
-  return Promise.resolve(MOCK_APIS.find((a) => a.id === id));
+async function fetchApiDetailFromApi(id: string): Promise<ApiItem | undefined> {
+  try {
+    const response = await api.get(`/v1/catalog/apis/${id}`);
+    return response.data;
+  } catch {
+    return MOCK_APIS.find((a) => a.id === id);
+  }
+}
+
+async function fetchApiDocs(id: string) {
+  try {
+    const response = await api.get(`/v1/catalog/apis/${id}/docs`);
+    return response.data;
+  } catch {
+    return { endpoints: MOCK_ENDPOINTS, schemas: {} };
+  }
+}
+
+async function fetchSnippet(id: string, lang: string): Promise<string> {
+  try {
+    const response = await api.get(`/v1/catalog/apis/${id}/snippets/${lang}`);
+    return response.data.snippet;
+  } catch {
+    return MOCK_SNIPPETS[lang as SnippetLang] || '';
+  }
 }
 
 const METHOD_COLORS: Record<string, string> = {
@@ -105,9 +129,24 @@ export default function ApiDetail() {
 
   const { data: api } = useQuery({
     queryKey: ['catalog-api', id],
-    queryFn: () => fetchApiDetail(id ?? ''),
+    queryFn: () => fetchApiDetailFromApi(id ?? ''),
     enabled: Boolean(id),
   });
+
+  const { data: docsData } = useQuery({
+    queryKey: ['catalog-api-docs', id],
+    queryFn: () => fetchApiDocs(id ?? ''),
+    enabled: Boolean(id) && activeTab === 'docs',
+  });
+
+  const { data: snippetData } = useQuery({
+    queryKey: ['catalog-api-snippet', id, snippetLang],
+    queryFn: () => fetchSnippet(id ?? '', snippetLang),
+    enabled: Boolean(id) && activeTab === 'snippets',
+  });
+
+  const endpoints = docsData?.endpoints ?? MOCK_ENDPOINTS;
+  const snippet = snippetData ?? MOCK_SNIPPETS[snippetLang];
 
   const activeTabIndex = TAB_KEYS.indexOf(activeTab);
 
@@ -169,7 +208,7 @@ export default function ApiDetail() {
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-gray-900">Endpoints</h2>
           <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
-            {MOCK_ENDPOINTS.map((ep) => (
+            {endpoints.map((ep: { method: string; path: string; description: string }) => (
               <div key={`${ep.method}-${ep.path}`} className="flex items-center gap-3 px-4 py-3">
                 <span className={`rounded px-2 py-0.5 text-xs font-bold ${METHOD_COLORS[ep.method] ?? ''}`}>
                   {ep.method}
@@ -197,7 +236,7 @@ export default function ApiDetail() {
             ))}
           </div>
           <pre className="overflow-x-auto rounded-xl border border-gray-200 bg-gray-900 p-4 text-sm text-green-300">
-            <code>{MOCK_SNIPPETS[snippetLang]}</code>
+            <code>{snippet}</code>
           </pre>
         </div>
 

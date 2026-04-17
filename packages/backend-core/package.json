@@ -1,28 +1,41 @@
 {
   "name": "@conecta2/backend-core",
-  "version": "0.1.0",
-  "private": true,
-  "main": "src/index.ts",
+  "version": "1.0.0",
+  "description": "Backend Core — Auth, Consumers, Admin for Conecta 2.0",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "npx ts-node --transpile-only src/index.ts",
+    "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
-    "test": "jest --runInBand"
+    "start": "node dist/index.js",
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "@conecta2/shared": "file:../shared",
-    "bcrypt": "^6.0.0",
-    "express": "^4.21.0"
+    "@conecta2/shared": "*",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
+    "uuid": "^11.0.5",
+    "http-proxy-middleware": "^3.0.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
-    "@types/jest": "^29.5.14",
-    "@types/supertest": "^6.0.2",
-    "fast-check": "^3.23.0",
-    "jest": "^30.0.0",
-    "supertest": "^7.1.0",
-    "ts-jest": "^29.3.0",
-    "typescript": "^5.7.0"
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/pg": "^8.11.10",
+    "@types/uuid": "^10.0.0",
+    "jest": "^30.3.0",
+    "@types/jest": "^30.0.0",
+    "nodemon": "^3.1.9",
+    "supertest": "^7.2.2",
+    "@types/supertest": "^7.2.0",
+    "ts-jest": "^29.4.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
   }
 }

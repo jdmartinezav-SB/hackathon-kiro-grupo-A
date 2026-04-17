@@ -1,64 +1,93 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import http from 'http';
-import { app } from './app';
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import { correlationIdMiddleware } from './middleware/correlation-id';
+import { errorHandler } from './middleware/error-handler';
+import authRoutes from './routes/auth.routes';
+import consumerRoutes from './routes/consumer.routes';
+import adminRoutes from './routes/admin.routes';
+import { catalogProxy, sandboxProxy, analyticsProxy } from './proxy';
+import pool from './config/database';
 
-const PORT = Number(process.env.PORT ?? 3000);
-const SHUTDOWN_TIMEOUT_MS = 30_000;
+const app = express();
+const PORT = parseInt(process.env.PORT || '3000', 10);
+const SERVICE_NAME = 'backend-core';
 
-const server = http.createServer(app);
+// Security & parsing
+app.use(helmet());
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(express.json());
 
-server.listen(PORT, () => {
+// Correlation-ID
+app.use(correlationIdMiddleware);
+
+// Request logger — JSON structured logs
+app.use((req: Request, _res, next) => {
   const log = {
     timestamp: new Date().toISOString(),
     level: 'info',
-    service: 'backend-core',
-    correlationId: 'startup',
-    message: `Server listening on port ${PORT}`,
+    service: SERVICE_NAME,
+    correlationId: req.correlationId,
+    message: `${req.method} ${req.originalUrl}`,
   };
-  process.stdout.write(JSON.stringify(log) + '\n');
+  console.log(JSON.stringify(log));
+  next();
 });
 
-// ── Graceful shutdown ──────────────────────────────────────
-function gracefulShutdown(signal: string): void {
+// Health check
+app.get('/health', (_req: Request, res: Response) => {
+  res.json({ status: 'ok', service: SERVICE_NAME, timestamp: new Date().toISOString() });
+});
+
+// Routes
+app.use(authRoutes);
+app.use(consumerRoutes);
+app.use(adminRoutes);
+
+// Proxy to catalog-service
+app.use('/v1/catalog', catalogProxy);
+app.use('/v1/admin/apis', catalogProxy);
+
+// Proxy to sandbox-service
+app.use('/v1/sandbox', sandboxProxy);
+
+// Proxy to analytics-service
+app.use('/v1/analytics', analyticsProxy);
+app.use('/v1/audit', analyticsProxy);
+app.use('/v1/notifications', analyticsProxy);
+app.use('/v1/admin/audit', analyticsProxy);
+
+// Centralized error handler
+app.use(errorHandler);
+
+// Start server
+const server = app.listen(PORT, () => {
   const log = {
     timestamp: new Date().toISOString(),
     level: 'info',
-    service: 'backend-core',
-    correlationId: 'shutdown',
-    message: `Received ${signal}. Starting graceful shutdown…`,
+    service: SERVICE_NAME,
+    message: `Server running on port ${PORT}`,
   };
-  process.stdout.write(JSON.stringify(log) + '\n');
+  console.log(JSON.stringify(log));
+});
 
-  // Stop accepting new connections and finish in-flight requests
-  server.close(() => {
-    const doneLog = {
-      timestamp: new Date().toISOString(),
-      level: 'info',
-      service: 'backend-core',
-      correlationId: 'shutdown',
-      message: 'All connections closed. Exiting.',
-    };
-    process.stdout.write(JSON.stringify(doneLog) + '\n');
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  const log = {
+    timestamp: new Date().toISOString(),
+    level: 'info',
+    service: SERVICE_NAME,
+    message: 'SIGTERM received — shutting down gracefully',
+  };
+  console.log(JSON.stringify(log));
+
+  server.close(async () => {
+    await pool.end();
     process.exit(0);
   });
+});
 
-  // Force exit after timeout to avoid hanging forever
-  setTimeout(() => {
-    const timeoutLog = {
-      timestamp: new Date().toISOString(),
-      level: 'warn',
-      service: 'backend-core',
-      correlationId: 'shutdown',
-      message: `Shutdown timed out after ${SHUTDOWN_TIMEOUT_MS}ms. Forcing exit.`,
-    };
-    process.stdout.write(JSON.stringify(timeoutLog) + '\n');
-    process.exit(1);
-  }, SHUTDOWN_TIMEOUT_MS).unref();
-}
-
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-export { server };
+export default app;

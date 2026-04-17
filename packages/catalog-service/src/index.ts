@@ -1,151 +1,79 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: '../../.env' });
+dotenv.config();
 
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { v4 as uuidv4 } from 'uuid';
+import { correlationIdMiddleware } from './middleware/correlation-id';
+import { errorHandler } from './middleware/error-handler';
+import catalogRoutes from './routes/catalog.routes';
+import adminRoutes from './routes/admin.routes';
+import pool from './config/database';
 
-// ---------------------------------------------------------------------------
-// Express app
-// ---------------------------------------------------------------------------
 const app = express();
-const PORT = Number(process.env.PORT_CATALOG) || 3002;
+const PORT = parseInt(process.env.PORT || '3002', 10);
+const SERVICE_NAME = 'catalog-service';
 
-// ---------------------------------------------------------------------------
-// Security & parsing middleware
-// ---------------------------------------------------------------------------
+// Security & parsing
 app.use(helmet());
-app.use(cors());
-app.use(express.json({ limit: '5mb' }));
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(express.json());
 
-// ---------------------------------------------------------------------------
-// Correlation-ID middleware
-// ---------------------------------------------------------------------------
-app.use((req: Request, _res: Response, next: NextFunction) => {
-  const correlationId = (req.headers['x-correlation-id'] as string) || uuidv4();
-  req.headers['x-correlation-id'] = correlationId;
+// Correlation-ID
+app.use(correlationIdMiddleware);
+
+// Request logger — JSON structured logs
+app.use((req: Request, _res, next) => {
+  const log = {
+    timestamp: new Date().toISOString(),
+    level: 'info',
+    service: SERVICE_NAME,
+    correlationId: req.correlationId,
+    message: `${req.method} ${req.originalUrl}`,
+  };
+  console.log(JSON.stringify(log));
   next();
 });
 
-// ---------------------------------------------------------------------------
-// Request logging middleware — structured JSON to stdout
-// ---------------------------------------------------------------------------
-app.use((req: Request, res: Response, next: NextFunction) => {
-  const start = Date.now();
+// Health check
+app.get('/health', (_req: Request, res: Response) => {
+  res.json({ status: 'ok', service: SERVICE_NAME, timestamp: new Date().toISOString() });
+});
 
-  res.on('finish', () => {
+// Routes
+app.use(catalogRoutes);
+app.use(adminRoutes);
+
+// Centralized error handler
+app.use(errorHandler);
+
+// Start server (skip in test environment to avoid EADDRINUSE)
+if (process.env.NODE_ENV !== 'test') {
+  const server = app.listen(PORT, () => {
     const log = {
       timestamp: new Date().toISOString(),
       level: 'info',
-      service: 'catalog-service',
-      correlationId: req.headers['x-correlation-id'],
-      method: req.method,
-      path: req.originalUrl,
-      statusCode: res.statusCode,
-      durationMs: Date.now() - start,
+      service: SERVICE_NAME,
+      message: `Server running on port ${PORT}`,
     };
-    process.stdout.write(JSON.stringify(log) + '\n');
+    console.log(JSON.stringify(log));
   });
 
-  next();
-});
-
-// ---------------------------------------------------------------------------
-// Health check
-// ---------------------------------------------------------------------------
-app.get('/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok', service: 'catalog-service', timestamp: new Date().toISOString() });
-});
-
-// ---------------------------------------------------------------------------
-// Routes
-// ---------------------------------------------------------------------------
-import parserRouter from './routes/parser.routes';
-import catalogRouter from './routes/catalog.routes';
-import adminRouter from './routes/admin.routes';
-import internalRouter from './routes/internal.routes';
-
-app.use('/v1/internal/parser', parserRouter);
-app.use('/v1/catalog/apis', catalogRouter);
-app.use('/v1/admin/apis', adminRouter);
-app.use('/v1/internal/versions', internalRouter);
-
-// TODO: catalog detail routes — /apis/:id, /apis/:id/docs, /apis/:id/snippets/:lang
-
-// ---------------------------------------------------------------------------
-// 404 handler
-// ---------------------------------------------------------------------------
-app.use((_req: Request, res: Response) => {
-  res.status(404).json({ error: 'Not Found' });
-});
-
-// ---------------------------------------------------------------------------
-// Global error handler
-// ---------------------------------------------------------------------------
-app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
-  const correlationId = req.headers['x-correlation-id'] || 'unknown';
-
-  const errorLog = {
-    timestamp: new Date().toISOString(),
-    level: 'error',
-    service: 'catalog-service',
-    correlationId,
-    message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
-  };
-  process.stdout.write(JSON.stringify(errorLog) + '\n');
-
-  res.status(500).json({
-    error: 'Internal Server Error',
-    correlationId,
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Server start + graceful shutdown
-// ---------------------------------------------------------------------------
-function startServer(port: number = PORT) {
-  const server = app.listen(port, () => {
-    const startLog = {
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    const log = {
       timestamp: new Date().toISOString(),
       level: 'info',
-      service: 'catalog-service',
-      message: `Catalog service running on port ${port}`,
+      service: SERVICE_NAME,
+      message: 'SIGTERM received — shutting down gracefully',
     };
-    process.stdout.write(JSON.stringify(startLog) + '\n');
-  });
+    console.log(JSON.stringify(log));
 
-  function gracefulShutdown(signal: string): void {
-    const shutdownLog = {
-      timestamp: new Date().toISOString(),
-      level: 'info',
-      service: 'catalog-service',
-      message: `Received ${signal}. Shutting down gracefully…`,
-    };
-    process.stdout.write(JSON.stringify(shutdownLog) + '\n');
-
-    server.close(() => {
-      const closedLog = {
-        timestamp: new Date().toISOString(),
-        level: 'info',
-        service: 'catalog-service',
-        message: 'HTTP server closed. Exiting.',
-      };
-      process.stdout.write(JSON.stringify(closedLog) + '\n');
+    server.close(async () => {
+      await pool.end();
       process.exit(0);
     });
-  }
-
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-  return server;
+  });
 }
 
-// Only start the server when running directly (not imported in tests)
-if (process.env.NODE_ENV !== 'test') {
-  startServer();
-}
-
-export { app, startServer };
+export default app;
