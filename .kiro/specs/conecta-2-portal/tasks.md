@@ -171,35 +171,35 @@
 **Puerto**: 5173 (Vite dev server)
 **Dependencias backend**: Consume APIs de los 4 servicios backend vía REST
 
-- [ ] 5.1 Inicializar proyecto React con Vite + TypeScript + Tailwind
-  - [ ] 5.1.1 `npm create vite@latest` con template react-ts en `packages/frontend/`
-  - [ ] 5.1.2 Instalar dependencias: `tailwindcss`, `@tanstack/react-query`, `react-router-dom`, `axios`, `lucide-react`, `sonner`, `react-hook-form`, `zod`, `@hookform/resolvers`
-  - [ ] 5.1.3 Configurar Tailwind CSS, React Query provider, React Router con rutas base
-  - [ ] 5.1.4 Crear `packages/frontend/src/lib/api.ts` — Cliente Axios con baseURL configurable por variable de entorno, interceptor para adjuntar JWT en header Authorization, interceptor de error para manejar 401 (redirect a login)
-- [ ] 5.2 Implementar layout y navegación
-  - [ ] 5.2.1 `src/components/layout/AppLayout.tsx` — Layout principal con sidebar de navegación (links: Catálogo, Sandbox, Analytics, Notificaciones, Admin) y header con nombre del usuario y botón logout
-  - [ ] 5.2.2 `src/components/layout/AuthLayout.tsx` — Layout para páginas de auth (registro, login) sin sidebar
-  - [ ] 5.2.3 Configurar rutas en `src/App.tsx`: `/login`, `/register`, `/catalog`, `/sandbox`, `/analytics`, `/notifications`, `/admin/consumers`, `/admin/apis`
-- [ ] 5.3 Implementar páginas de autenticación (Req 1)
-  - [ ] 5.3.1 `src/pages/Register.tsx` — Formulario de registro con campos: email, password, companyName, businessProfile (select), contactName. Validación con Zod + react-hook-form. Al submit: POST a `/v1/auth/register`, mostrar mensaje de éxito con toast (sonner)
-  - [ ] 5.3.2 `src/pages/Login.tsx` — Formulario de login con email y password. Al submit: POST a `/v1/auth/login`, guardar JWT en memoria (React state/context), redirect a `/catalog`
-  - [ ] 5.3.3 `src/context/AuthContext.tsx` — Context provider para estado de autenticación: user, accessToken, login(), logout(), isAuthenticated
-- [ ] 5.4 Implementar página de Catálogo de APIs (Req 2)
-  - [ ] 5.4.1 `src/pages/Catalog.tsx` — Lista de APIs con cards. Cada card muestra: nombre, descripción, versión, estado (badge de color), categoría. Filtros: búsqueda por texto, categoría, estado. Badge de "Deprecada" con fecha sunset si aplica. Click en card navega a detalle
-  - [ ] 5.4.2 `src/pages/ApiDetail.tsx` — Detalle de API con tabs: Documentación (endpoints agrupados por recurso), Snippets (selector de lenguaje con código copiable), Versiones (lista de versiones con estado)
-- [ ] 5.5 Implementar página de Sandbox (Req 3)
-  - [ ] 5.5.1 `src/pages/Sandbox.tsx` — Interfaz tipo Postman: selector de API y versión, selector de método HTTP, campo de path, editor de headers (key-value), editor de body (textarea JSON). Botón "Ejecutar". Panel de respuesta: status code (badge de color), headers, body formateado, tiempo de respuesta. Historial de últimas peticiones en sidebar colapsable
-- [ ] 5.6 Implementar página de Analytics (Req 4)
-  - [ ] 5.6.1 `src/pages/Analytics.tsx` — Dashboard con: 4 cards de métricas (total peticiones, tasa éxito %, tasa error %, latencia promedio ms). Barra de progreso de cuota (% usado con colores: verde <60%, amarillo 60-80%, rojo >80%). Filtros: rango de fechas, API específica. Tabla de peticiones recientes
-- [ ] 5.7 Implementar páginas de Administración (Reqs 7, 9)
-  - [ ] 5.7.1 `src/pages/admin/ConsumerManagement.tsx` — Tabla de consumidores con columnas: nombre, email, estado (badge), # apps, fecha registro. Acciones: aprobar, suspender, revocar (con modal de confirmación y campo de motivo). Búsqueda por nombre/email/estado
-  - [ ] 5.7.2 `src/pages/admin/ApiManagement.tsx` — Lista de APIs con versiones. Acciones: crear API, publicar versión (formulario con textarea para spec OpenAPI), crear plan sunset (date picker con validación ≥90 días)
-- [ ] 5.8 Implementar página de Notificaciones (Req 6)
-  - [ ] 5.8.1 `src/pages/Notifications.tsx` — Lista de notificaciones con badge de no leídas en sidebar. Cada notificación muestra: tipo (icono), título, mensaje, fecha, prioridad. Click marca como leída. Filtro: todas/no leídas
-- [ ] 5.9 Tests mínimos funcionales
-  - [ ] 5.9.1 Test: Página de Login renderiza formulario y maneja submit
-  - [ ] 5.9.2 Test: Página de Catálogo renderiza lista de APIs con filtros
-  - [ ] 5.9.3 Test: Página de Sandbox renderiza interfaz de ejecución y muestra respuesta
+- [x] 5.1 Inicializar proyecto React con Vite + TypeScript + Tailwind
+  - [x] 5.1.1 `npm create vite@latest` con template react-ts en `packages/frontend/`
+  - [x] 5.1.2 Instalar dependencias: `tailwindcss`, `@tanstack/react-query`, `react-router-dom`, `axios`, `lucide-react`, `sonner`, `react-hook-form`, `zod`, `@hookform/resolvers`
+  - [x] 5.1.3 Configurar Tailwind CSS, React Query provider, React Router con rutas base
+  - [x] 5.1.4 Crear `packages/frontend/src/lib/api.ts` — Cliente Axios con baseURL configurable por variable de entorno, interceptor para adjuntar JWT en header Authorization, interceptor de error para manejar 401 (redirect a login)
+- [x] 5.2 Implementar layout y navegación
+  - [x] 5.2.1 `src/components/layout/AppLayout.tsx` — Layout principal con sidebar de navegación (links: Catálogo, Sandbox, Analytics, Notificaciones, Admin) y header con nombre del usuario y botón logout
+  - [x] 5.2.2 `src/components/layout/AuthLayout.tsx` — Layout para páginas de auth (registro, login) sin sidebar
+  - [x] 5.2.3 Configurar rutas en `src/App.tsx`: `/login`, `/register`, `/catalog`, `/sandbox`, `/analytics`, `/notifications`, `/admin/consumers`, `/admin/apis`
+- [x] 5.3 Implementar páginas de autenticación (Req 1)
+  - [x] 5.3.1 `src/pages/Register.tsx` — Formulario de registro con campos: email, password, companyName, businessProfile (select), contactName. Validación con Zod + react-hook-form. Al submit: POST a `/v1/auth/register`, mostrar mensaje de éxito con toast (sonner)
+  - [x] 5.3.2 `src/pages/Login.tsx` — Formulario de login con email y password. Al submit: POST a `/v1/auth/login`, guardar JWT en memoria (React state/context), redirect a `/catalog`
+  - [x] 5.3.3 `src/context/AuthContext.tsx` — Context provider para estado de autenticación: user, accessToken, login(), logout(), isAuthenticated
+- [x] 5.4 Implementar página de Catálogo de APIs (Req 2)
+  - [x] 5.4.1 `src/pages/Catalog.tsx` — Lista de APIs con cards. Cada card muestra: nombre, descripción, versión, estado (badge de color), categoría. Filtros: búsqueda por texto, categoría, estado. Badge de "Deprecada" con fecha sunset si aplica. Click en card navega a detalle
+  - [x] 5.4.2 `src/pages/ApiDetail.tsx` — Detalle de API con tabs: Documentación (endpoints agrupados por recurso), Snippets (selector de lenguaje con código copiable), Versiones (lista de versiones con estado)
+- [x] 5.5 Implementar página de Sandbox (Req 3)
+  - [x] 5.5.1 `src/pages/Sandbox.tsx` — Interfaz tipo Postman: selector de API y versión, selector de método HTTP, campo de path, editor de headers (key-value), editor de body (textarea JSON). Botón "Ejecutar". Panel de respuesta: status code (badge de color), headers, body formateado, tiempo de respuesta. Historial de últimas peticiones en sidebar colapsable
+- [x] 5.6 Implementar página de Analytics (Req 4)
+  - [x] 5.6.1 `src/pages/Analytics.tsx` — Dashboard con: 4 cards de métricas (total peticiones, tasa éxito %, tasa error %, latencia promedio ms). Barra de progreso de cuota (% usado con colores: verde <60%, amarillo 60-80%, rojo >80%). Filtros: rango de fechas, API específica. Tabla de peticiones recientes
+- [x] 5.7 Implementar páginas de Administración (Reqs 7, 9)
+  - [x] 5.7.1 `src/pages/admin/ConsumerManagement.tsx` — Tabla de consumidores con columnas: nombre, email, estado (badge), # apps, fecha registro. Acciones: aprobar, suspender, revocar (con modal de confirmación y campo de motivo). Búsqueda por nombre/email/estado
+  - [x] 5.7.2 `src/pages/admin/ApiManagement.tsx` — Lista de APIs con versiones. Acciones: crear API, publicar versión (formulario con textarea para spec OpenAPI), crear plan sunset (date picker con validación ≥90 días)
+- [x] 5.8 Implementar página de Notificaciones (Req 6)
+  - [x] 5.8.1 `src/pages/Notifications.tsx` — Lista de notificaciones con badge de no leídas en sidebar. Cada notificación muestra: tipo (icono), título, mensaje, fecha, prioridad. Click marca como leída. Filtro: todas/no leídas
+- [x] 5.9 Tests mínimos funcionales
+  - [x] 5.9.1 Test: Página de Login renderiza formulario y maneja submit
+  - [x] 5.9.2 Test: Página de Catálogo renderiza lista de APIs con filtros
+  - [x] 5.9.3 Test: Página de Sandbox renderiza interfaz de ejecución y muestra respuesta
 
 ---
 
