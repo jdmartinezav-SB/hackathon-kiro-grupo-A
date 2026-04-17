@@ -48,14 +48,13 @@ export default function AppLayout() {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-6">
-          <div
-            className="h-8 w-8 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: 'var(--sb-ui-color-primary-base)' }}
-          >
-            <span className="text-sm font-bold text-white">C2</span>
-          </div>
-          <span className="text-lg font-bold text-gray-900">Conecta 2.0</span>
+        <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-4">
+          <img
+            src="/logo-seguros-bolivar.png"
+            alt="Seguros Bolívar"
+            className="h-8 max-w-[100px] shrink-0 object-contain"
+          />
+          <span className="text-base font-bold text-gray-900 whitespace-nowrap">Conecta 2.0</span>
           <button
             type="button"
             className="ml-auto lg:hidden"
