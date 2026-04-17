@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Tag, AlertTriangle } from 'lucide-react';
+import { Tag, AlertTriangle } from 'lucide-react';
 import { SbInput, SbSelect, SbAlert } from '../components/ui';
 import api from '../lib/api';
 
@@ -106,18 +106,14 @@ export default function Catalog() {
       <h1 className="text-2xl font-bold text-gray-900">Catálogo de APIs</h1>
 
       {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
-          <SbInput
-            type="text"
-            placeholder="Buscar por nombre o descripción…"
-            value={search}
-            onChange={(val) => setSearch(val)}
-            className="w-full [&>*]:pl-9"
-            data-testid="catalog-search"
-          />
-        </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_1fr]">
+        <SbInput
+          type="text"
+          placeholder="Buscar por nombre o descripción…"
+          value={search}
+          onChange={(val) => setSearch(val)}
+          data-testid="catalog-search"
+        />
 
         <SbSelect
           value={categoryFilter}
