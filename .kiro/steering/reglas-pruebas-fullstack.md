@@ -1,5 +1,5 @@
 ---
-inclusion: auto
+inclusion: always
 ---
 
 # Reglas de Testing Fullstack — Cobertura SonarQube

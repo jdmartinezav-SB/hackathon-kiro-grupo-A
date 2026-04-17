@@ -21,8 +21,6 @@
 
 ### Excelencia Operativa
 
-Desarrollar y entregar nuevas capacidades de negocio:
-
 - Infraestructura flexible y escalable.
 - Automatización e Inteligencia Artificial: AI First.
 - Operación Inteligente: SmartOps (AI Ops).
@@ -55,8 +53,6 @@ Desarrollar y entregar nuevas capacidades de negocio:
 - Formación, Skill Hacking.
 
 ### Evolución y Transformación de la Tecnología
-
-Asegurar la disponibilidad, Seguridad y Confiabilidad de la Operación:
 
 - Disponibilidad y estabilidad de los canales transaccionales y atención a usuarios.
 - Ciberseguridad y Observabilidad como capacidades transversales.
@@ -96,10 +92,7 @@ Conecta 2.0 es el API Developer Portal de grado empresarial de Seguros Bolívar,
 
 ### Verticales digitales
 
-- Autos digital
-- Hogar digital
-- Salud digital
-- Arrendamiento digital
+- Autos digital, Hogar digital, Salud digital, Arrendamiento digital
 
 ### Actores del ecosistema
 

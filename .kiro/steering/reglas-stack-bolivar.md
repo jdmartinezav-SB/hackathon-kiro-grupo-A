@@ -1,5 +1,5 @@
 ---
-inclusion: auto
+inclusion: always
 ---
 
 # 🛠️ Stack Tecnológico de Autogestión (v3.3)

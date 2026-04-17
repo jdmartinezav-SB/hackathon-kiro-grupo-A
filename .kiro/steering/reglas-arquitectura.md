@@ -1,5 +1,5 @@
 ---
-inclusion: auto
+inclusion: always
 ---
 
 # 📐 Reglas de Arquitectura para Proyectos de Autogestión (v2.1)
