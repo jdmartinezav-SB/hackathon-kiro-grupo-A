@@ -6,7 +6,10 @@ export default function AuthLayout() {
       <div className="w-full max-w-md">
         {/* Logo / Title */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-600">
+          <div
+            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl"
+            style={{ backgroundColor: 'var(--sb-ui-color-primary-base)' }}
+          >
             <span className="text-xl font-bold text-white">C2</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Conecta 2.0</h1>

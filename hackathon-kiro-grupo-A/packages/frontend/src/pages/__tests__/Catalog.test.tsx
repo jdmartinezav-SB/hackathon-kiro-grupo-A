@@ -20,12 +20,10 @@ describe('Catalog Page', () => {
       await screen.findByText(/cotización autos/i),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByPlaceholderText(/buscar por nombre o descripción/i),
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole('combobox', { name: /filtrar por categoría/i }),
-    ).toBeInTheDocument();
+    // After migration to Web Components, <sb-ui-input> and <sb-ui-select>
+    // don't expose native roles (textbox, combobox) in jsdom.
+    // Use data-testid to locate the custom element wrappers.
+    expect(screen.getByTestId('catalog-search')).toBeInTheDocument();
+    expect(screen.getByTestId('catalog-category-filter')).toBeInTheDocument();
   });
 });

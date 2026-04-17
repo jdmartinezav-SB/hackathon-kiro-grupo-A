@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Activity, CheckCircle, XCircle, Clock } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { SbInput, SbSelect, SbTable } from '../components/ui';
 
 /* ── Types ── */
 interface MetricCard {
@@ -118,48 +119,64 @@ export default function Analytics() {
       <div className="flex flex-col gap-3 sm:flex-row">
         <div>
           <label htmlFor="date-from" className="mb-1 block text-xs font-medium text-gray-600">Desde</label>
-          <input id="date-from" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+          <SbInput
+            id="date-from"
+            type="date"
+            value={dateFrom}
+            onChange={(val) => setDateFrom(val)}
+          />
         </div>
         <div>
           <label htmlFor="date-to" className="mb-1 block text-xs font-medium text-gray-600">Hasta</label>
-          <input id="date-to" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500" />
+          <SbInput
+            id="date-to"
+            type="date"
+            value={dateTo}
+            onChange={(val) => setDateTo(val)}
+          />
         </div>
         <div>
           <label htmlFor="api-filter" className="mb-1 block text-xs font-medium text-gray-600">API</label>
-          <select id="api-filter" value={apiFilter} onChange={(e) => setApiFilter(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500">
+          <SbSelect
+            name="api-filter"
+            value={apiFilter}
+            onChange={(val) => setApiFilter(val)}
+          >
             {MOCK_APIS.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}
-          </select>
+          </SbSelect>
         </div>
       </div>
 
       {/* Requests table */}
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
-              <th className="px-4 py-3">Endpoint</th>
-              <th className="px-4 py-3">Método</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Latencia</th>
-              <th className="px-4 py-3">Fecha</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {requests.map((r) => (
-              <tr key={r.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-800">{r.endpoint}</td>
-                <td className="px-4 py-3">
-                  <span className={`rounded px-1.5 py-0.5 text-xs font-bold ${METHOD_COLORS[r.method] ?? ''}`}>{r.method}</span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge(r.status)}`}>{r.status}</span>
-                </td>
-                <td className="px-4 py-3 text-gray-500">{r.latency}ms</td>
-                <td className="px-4 py-3 text-gray-400">{r.date}</td>
+        <SbTable>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
+                <th className="px-4 py-3">Endpoint</th>
+                <th className="px-4 py-3">Método</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Latencia</th>
+                <th className="px-4 py-3">Fecha</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {requests.map((r) => (
+                <tr key={r.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 font-medium text-gray-800">{r.endpoint}</td>
+                  <td className="px-4 py-3">
+                    <span className={`rounded px-1.5 py-0.5 text-xs font-bold ${METHOD_COLORS[r.method] ?? ''}`}>{r.method}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge(r.status)}`}>{r.status}</span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">{r.latency}ms</td>
+                  <td className="px-4 py-3 text-gray-400">{r.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </SbTable>
       </div>
     </div>
   );

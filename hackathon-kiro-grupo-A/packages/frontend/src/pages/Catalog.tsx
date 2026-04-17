@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Tag, AlertTriangle } from 'lucide-react';
+import { SbInput, SbSelect, SbAlert } from '../components/ui';
 
 interface ApiItem {
   id: string;
@@ -51,7 +52,7 @@ function ApiCard({ api }: { api: ApiItem }) {
       <p className="text-sm text-gray-500 line-clamp-2">{api.description}</p>
 
       <div className="mt-auto flex flex-wrap items-center gap-2">
-        <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+        <span className="rounded-md bg-[var(--sb-ui-color-primary-L400)] px-2 py-0.5 text-xs font-medium text-[var(--sb-ui-color-primary-D100)]">
           {api.version}
         </span>
         <span className="flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
@@ -61,10 +62,12 @@ function ApiCard({ api }: { api: ApiItem }) {
       </div>
 
       {api.status === 'deprecated' && api.sunsetDate && (
-        <div className="flex items-center gap-1.5 rounded-lg bg-orange-50 px-3 py-1.5 text-xs text-orange-700">
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-          Sunset: {new Date(api.sunsetDate).toLocaleDateString('es-CO')}
-        </div>
+        <SbAlert variant="warning">
+          <div className="flex items-center gap-1.5 text-xs">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            Sunset: {new Date(api.sunsetDate).toLocaleDateString('es-CO')}
+          </div>
+        </SbAlert>
       )}
     </button>
   );
@@ -99,39 +102,37 @@ export default function Catalog() {
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
+          <SbInput
             type="text"
             placeholder="Buscar por nombre o descripción…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+            onChange={(val) => setSearch(val)}
+            className="w-full [&>*]:pl-9"
+            data-testid="catalog-search"
           />
         </div>
 
-        <select
+        <SbSelect
           value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-          aria-label="Filtrar por categoría"
+          onChange={(val) => setCategoryFilter(val)}
+          data-testid="catalog-category-filter"
         >
           <option value="">Todas las categorías</option>
           {categories.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
-        </select>
+        </SbSelect>
 
-        <select
+        <SbSelect
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-          aria-label="Filtrar por estado"
+          onChange={(val) => setStatusFilter(val)}
         >
           <option value="">Todos los estados</option>
           <option value="active">Activa</option>
           <option value="maintenance">Mantenimiento</option>
           <option value="deprecated">Deprecada</option>
-        </select>
+        </SbSelect>
       </div>
 
       {/* Grid */}

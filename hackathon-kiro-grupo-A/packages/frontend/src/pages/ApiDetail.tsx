@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, FileText, Code, GitBranch } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { SbTabs, SbButton, SbBreadcrumb } from '../components/ui';
 
 interface ApiItem {
   id: string;
@@ -85,13 +86,9 @@ const VERSION_STATUS: Record<string, { label: string; className: string }> = {
   retired: { label: 'Retirada', className: 'bg-red-100 text-red-700' },
 };
 
-const TABS = [
-  { key: 'docs', label: 'Documentación', icon: FileText },
-  { key: 'snippets', label: 'Snippets', icon: Code },
-  { key: 'versions', label: 'Versiones', icon: GitBranch },
-] as const;
+type TabKey = 'docs' | 'snippets' | 'versions';
 
-type TabKey = (typeof TABS)[number]['key'];
+const TAB_KEYS: TabKey[] = ['docs', 'snippets', 'versions'];
 
 const LANG_OPTIONS: { key: SnippetLang; label: string }[] = [
   { key: 'javascript', label: 'JavaScript' },
@@ -112,24 +109,50 @@ export default function ApiDetail() {
     enabled: Boolean(id),
   });
 
+  const activeTabIndex = TAB_KEYS.indexOf(activeTab);
+
   if (!api) {
     return (
       <div className="flex flex-col items-center gap-4 py-24">
         <p className="text-gray-400">API no encontrada</p>
-        <button type="button" onClick={() => navigate('/catalog')} className="text-sm text-indigo-600 hover:underline">
-          Volver al catálogo
-        </button>
+        <SbButton
+          variant="secondary"
+          styleType="text"
+          size="small"
+          onClick={() => navigate('/catalog')}
+        >
+          <span className="text-sm text-[var(--sb-ui-color-primary-base)] hover:underline">
+            Volver al catálogo
+          </span>
+        </SbButton>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <SbBreadcrumb>
+        <span
+          onClick={() => navigate('/catalog')}
+          className="cursor-pointer text-sm text-[var(--sb-ui-color-primary-base)] hover:underline"
+        >
+          Catálogo
+        </span>
+        <span className="text-sm text-gray-500">{api.name}</span>
+      </SbBreadcrumb>
+
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button type="button" onClick={() => navigate('/catalog')} className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100" aria-label="Volver">
-          <ArrowLeft className="h-5 w-5" />
-        </button>
+        <SbButton
+          variant="secondary"
+          styleType="stroke"
+          onClick={() => navigate('/catalog')}
+          size="small"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </SbButton>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{api.name}</h1>
           <p className="text-sm text-gray-500">{api.description}</p>
@@ -137,26 +160,12 @@ export default function ApiDetail() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200">
-        {TABS.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-              activeTab === tab.key
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <tab.icon className="h-4 w-4" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      {activeTab === 'docs' && (
+      <SbTabs
+        activeTab={activeTabIndex}
+        onTabChange={(index) => { const key = TAB_KEYS[index]; if (key !== undefined) setActiveTab(key); }}
+        tabs={['Documentación', 'Snippets', 'Versiones']}
+      >
+        {/* Panel 0: Docs */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-gray-900">Endpoints</h2>
           <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
@@ -171,33 +180,28 @@ export default function ApiDetail() {
             ))}
           </div>
         </div>
-      )}
 
-      {activeTab === 'snippets' && (
+        {/* Panel 1: Snippets */}
         <div className="space-y-4">
           <div className="flex gap-2">
             {LANG_OPTIONS.map((lang) => (
-              <button
+              <SbButton
                 key={lang.key}
-                type="button"
+                variant={snippetLang === lang.key ? 'primary' : 'secondary'}
+                styleType={snippetLang === lang.key ? 'fill' : 'text'}
+                size="small"
                 onClick={() => setSnippetLang(lang.key)}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                  snippetLang === lang.key
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
               >
                 {lang.label}
-              </button>
+              </SbButton>
             ))}
           </div>
           <pre className="overflow-x-auto rounded-xl border border-gray-200 bg-gray-900 p-4 text-sm text-green-300">
             <code>{MOCK_SNIPPETS[snippetLang]}</code>
           </pre>
         </div>
-      )}
 
-      {activeTab === 'versions' && (
+        {/* Panel 2: Versions */}
         <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
           {MOCK_VERSIONS.map((v) => {
             const vs = VERSION_STATUS[v.status] ?? { label: v.status, className: 'bg-gray-100 text-gray-700' };
@@ -214,7 +218,7 @@ export default function ApiDetail() {
             );
           })}
         </div>
-      )}
+      </SbTabs>
     </div>
   );
 }

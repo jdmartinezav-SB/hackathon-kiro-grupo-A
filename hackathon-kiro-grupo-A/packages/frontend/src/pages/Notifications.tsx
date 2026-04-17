@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Bell, GitBranch, Wrench, AlertTriangle, Info, CircleDot } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { SbTabs, SbAlert } from '../components/ui';
 
 /* ── Types ── */
 interface Notification {
@@ -43,6 +44,80 @@ const PRIORITY_BADGE: Record<string, { label: string; className: string }> = {
 };
 
 type FilterTab = 'all' | 'unread';
+const FILTER_KEYS: FilterTab[] = ['all', 'unread'];
+
+/* ── Notification list content ── */
+function NotificationList({
+  displayed,
+  markAsRead,
+}: {
+  displayed: (Notification & { read: boolean })[];
+  markAsRead: (id: string) => void;
+}) {
+  if (displayed.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-2 py-16">
+        <Bell className="h-10 w-10 text-gray-300" />
+        <p className="text-sm text-gray-400">No hay notificaciones</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {displayed.map((n) => {
+        const typeConfig = TYPE_ICONS[n.type] ?? { icon: Info, className: 'text-gray-600 bg-gray-100' };
+        const Icon = typeConfig.icon;
+        const priorityCfg = PRIORITY_BADGE[n.priority] ?? { label: n.priority, className: 'bg-gray-100 text-gray-600' };
+
+        const notificationButton = (
+          <button
+            key={n.id}
+            type="button"
+            onClick={() => markAsRead(n.id)}
+            className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition-colors ${
+              n.read
+                ? 'border-gray-100 bg-white'
+                : 'border-[var(--sb-ui-color-primary-L400)] bg-[var(--sb-ui-color-primary-L400)]/30'
+            } hover:bg-gray-50`}
+          >
+            {/* Icon */}
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${typeConfig.className}`}>
+              <Icon className="h-5 w-5" />
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                {!n.read && <CircleDot className="h-3 w-3 shrink-0 text-[var(--sb-ui-color-primary-base)]" />}
+                <h3 className={`text-sm ${n.read ? 'font-medium text-gray-700' : 'font-semibold text-gray-900'}`}>
+                  {n.title}
+                </h3>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityCfg.className}`}>
+                  {priorityCfg.label}
+                </span>
+              </div>
+              <p className="mt-0.5 text-sm text-gray-500 line-clamp-2">{n.message}</p>
+              <p className="mt-1 text-xs text-gray-400">
+                {new Date(n.createdAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+          </button>
+        );
+
+        if (n.priority === 'urgent') {
+          return (
+            <SbAlert variant="error" key={n.id}>
+              {notificationButton}
+            </SbAlert>
+          );
+        }
+
+        return notificationButton;
+      })}
+    </div>
+  );
+}
 
 /* ── Component ── */
 export default function Notifications() {
@@ -67,6 +142,8 @@ export default function Notifications() {
     setReadIds((prev) => new Set(prev).add(id));
   };
 
+  const activeFilterIndex = FILTER_KEYS.indexOf(filter);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -78,74 +155,17 @@ export default function Notifications() {
         )}
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-1 border-b border-gray-200">
-        {([['all', 'Todas'], ['unread', 'No leídas']] as const).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setFilter(key)}
-            className={`border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-              filter === key
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Notification list */}
-      {displayed.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 py-16">
-          <Bell className="h-10 w-10 text-gray-300" />
-          <p className="text-sm text-gray-400">No hay notificaciones</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {displayed.map((n) => {
-            const typeConfig = TYPE_ICONS[n.type] ?? { icon: Info, className: 'text-gray-600 bg-gray-100' };
-            const Icon = typeConfig.icon;
-            const priorityCfg = PRIORITY_BADGE[n.priority] ?? { label: n.priority, className: 'bg-gray-100 text-gray-600' };
-
-            return (
-              <button
-                key={n.id}
-                type="button"
-                onClick={() => markAsRead(n.id)}
-                className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition-colors ${
-                  n.read
-                    ? 'border-gray-100 bg-white'
-                    : 'border-indigo-100 bg-indigo-50/30'
-                } hover:bg-gray-50`}
-              >
-                {/* Icon */}
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${typeConfig.className}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    {!n.read && <CircleDot className="h-3 w-3 shrink-0 text-indigo-500" />}
-                    <h3 className={`text-sm ${n.read ? 'font-medium text-gray-700' : 'font-semibold text-gray-900'}`}>
-                      {n.title}
-                    </h3>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityCfg.className}`}>
-                      {priorityCfg.label}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 text-sm text-gray-500 line-clamp-2">{n.message}</p>
-                  <p className="mt-1 text-xs text-gray-400">
-                    {new Date(n.createdAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      )}
+      {/* SbTabs replaces manual filter tabs */}
+      <SbTabs
+        activeTab={activeFilterIndex}
+        onTabChange={(index) => { const key = FILTER_KEYS[index]; if (key !== undefined) setFilter(key); }}
+        tabs={['Todas', 'No leídas']}
+      >
+        {/* Panel for "Todas" */}
+        <NotificationList displayed={displayed} markAsRead={markAsRead} />
+        {/* Panel for "No leídas" */}
+        <NotificationList displayed={displayed} markAsRead={markAsRead} />
+      </SbTabs>
     </div>
   );
 }
