@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Auto-commit Specs",
+  "description": "Cuando se crea o edita un archivo dentro de .kiro/specs/, ejecuta automáticamente git add y commit con un mensaje descriptivo.",
+  "version": "1",
+  "when": {
+    "type": "fileCreated",
+    "patterns": [
+      ".kiro/specs/**/*.md",
+      ".kiro/specs/**/*.kiro"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "git add .kiro/specs/ && git commit -m \"docs(specs): auto-commit spec update\""
+  }
+}

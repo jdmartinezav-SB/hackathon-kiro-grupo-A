@@ -140,6 +140,7 @@ El portal atiende dos perfiles de usuario principales: **Consumidores** (interme
 5. THE Portal SHALL garantizar la inmutabilidad de los Registro_Auditoría una vez creados, impidiendo su modificación o eliminación por cualquier usuario.
 6. IF un Administrador solicita un reporte que excede 100,000 registros, THEN THE Portal SHALL procesar la generación de forma asíncrona y notificar al Administrador cuando el archivo esté disponible para descarga.
 7. THE Portal SHALL incluir un Correlation_ID único en cada petición que atraviese el Gateway para permitir trazabilidad extremo a extremo entre el Portal, el Gateway y los servicios internos.
+8. THE Portal SHALL aplicar una política de borrado automático de datos personales de Consumidores inactivos que no supere los 90 días desde la última actividad, conforme a las políticas de retención de datos de Seguros Bolívar.
 
 ### Requerimiento 9: Gobierno de Versiones de APIs
 
@@ -154,6 +155,7 @@ El portal atiende dos perfiles de usuario principales: **Consumidores** (interme
 5. THE Portal SHALL mantener al menos dos versiones activas de cada API simultáneamente durante el período de transición.
 6. WHEN un Administrador consulta el estado de versiones de una API, THE Portal SHALL mostrar: versiones activas, versiones en deprecación con fecha de retiro, y versiones retiradas con fecha de retiro efectiva.
 7. IF un Administrador intenta retirar una versión de API que aún tiene Consumidores activos sin una versión de reemplazo publicada, THEN THE Portal SHALL bloquear la acción y mostrar la lista de Consumidores afectados.
+8. THE Portal SHALL exponer todas las versiones de API bajo un esquema de prefijos en las rutas (ej: `/v1/api/`, `/v2/api/`), garantizando que los Consumidores puedan dirigir sus peticiones a una versión específica sin ambigüedad.
 
 ### Requerimiento 10: Seguridad B2B (mTLS y OAuth2)
 
@@ -168,6 +170,11 @@ El portal atiende dos perfiles de usuario principales: **Consumidores** (interme
 5. IF una petición presenta un certificado mTLS inválido o expirado, THEN THE Gateway SHALL rechazar la conexión antes de procesar la petición y registrar el evento como Registro_Auditoría de seguridad.
 6. THE Portal SHALL almacenar los tokens de refresco exclusivamente en cookies httpOnly para prevenir ataques XSS.
 7. THE Gateway SHALL validar los scopes del token JWT contra los permisos del Plan_Suscripción del Consumidor antes de permitir el acceso a cada endpoint.
+8. THE Gateway SHALL validar que cada petición acceda únicamente a recursos autorizados para el Consumidor autenticado, impidiendo el acceso a recursos de otros Consumidores (protección contra BOLA — Broken Object Level Authorization).
+9. THE Gateway SHALL sanitizar y validar todos los parámetros de entrada contra la Definición_OpenAPI correspondiente antes de enrutar la petición al servicio interno, rechazando peticiones con parámetros malformados o potencialmente maliciosos con código HTTP 400.
+10. THE Portal SHALL documentar la cobertura de cada uno de los 10 controles del OWASP API Security Top 10 (2023), y THE Gateway SHALL implementar protecciones activas para al menos los siguientes riesgos: BOLA, Broken Authentication, Excessive Data Exposure, Lack of Resources & Rate Limiting e Injection.
+11. THE Gateway SHALL enmascarar datos sensibles (PII, financieros, de salud) en las respuestas de API según las políticas de clasificación de datos de Seguros Bolívar, garantizando que el 100% de los campos clasificados como confidenciales o restringidos sean enmascarados antes de llegar al Consumidor.
+12. THE Portal SHALL clasificar cada campo de respuesta de API como público, interno, confidencial o restringido, y THE Gateway SHALL aplicar la política de enmascaramiento correspondiente a cada clasificación.
 
 ### Requerimiento 11: Capa de Abstracción de Legados
 
@@ -232,6 +239,7 @@ El portal atiende dos perfiles de usuario principales: **Consumidores** (interme
 4. WHEN la carga del Portal supera el 70% de la capacidad configurada, THE Portal SHALL escalar horizontalmente de forma automática agregando instancias adicionales en un máximo de 120 segundos.
 5. WHEN una instancia del Portal falla un health check, THE Portal SHALL remover la instancia del balanceador de carga y reemplazarla con una nueva instancia en un máximo de 90 segundos.
 6. THE Portal SHALL completar un graceful shutdown procesando todas las transacciones en curso antes de finalizar una instancia durante un despliegue o reinicio.
+7. THE Portal SHALL comunicarse con todos los servicios internos, bases de datos y componentes de infraestructura exclusivamente mediante nombres de dominio (DNS), prohibiendo el uso de direcciones IP fijas en cualquier configuración.
 
 ### Requerimiento 16: Parseo y Renderizado de Definiciones OpenAPI
 
@@ -245,3 +253,17 @@ El portal atiende dos perfiles de usuario principales: **Consumidores** (interme
 4. IF una Definición_OpenAPI contiene errores de sintaxis o violaciones del esquema OpenAPI 3.x, THEN THE Parser SHALL devolver una lista de errores descriptivos indicando la línea, el campo y la naturaleza del error.
 5. WHEN el Portal renderiza una Definición_API_Interna como documentación interactiva, THE Portal SHALL mostrar todos los endpoints agrupados por recurso, con esquemas expandibles, ejemplos de request/response y códigos de error.
 6. THE Parser SHALL procesar una Definición_OpenAPI de hasta 5,000 líneas en un máximo de 2 segundos.
+
+### Requerimiento 17: Separación de Planos (Control vs Data Plane)
+
+**Historia de Usuario:** Como Administrador, quiero que el plano de control resida en la nube y los Gateways (Data Plane) operen en la DMZ o infraestructura privada, para poder minimizar la latencia hacia los servicios core y mantener el gobierno centralizado del ecosistema.
+
+#### Criterios de Aceptación
+
+1. THE Portal (plano de control) SHALL desplegarse en infraestructura cloud y gestionar de forma centralizada la configuración de políticas, credenciales, catálogo de APIs y gobierno de versiones.
+2. THE Gateway (plano de datos) SHALL desplegarse en la DMZ o infraestructura privada de Seguros Bolívar, procesando el tráfico de API lo más cerca posible de los servicios core para minimizar latencia.
+3. WHEN un Administrador modifica una política, credencial o configuración de API en el plano de control, THE Portal SHALL sincronizar el cambio al plano de datos (Gateway) en un máximo de 30 segundos.
+4. IF el plano de control se encuentra temporalmente inaccesible, THEN THE Gateway SHALL continuar operando en modo degradado utilizando la última configuración sincronizada, sin interrumpir el procesamiento de peticiones de API.
+5. THE Portal SHALL mantener un registro de sincronización que documente cada cambio propagado del plano de control al plano de datos, incluyendo timestamp, tipo de cambio y estado de confirmación.
+6. THE Gateway SHALL operar de forma independiente del plano de control para el procesamiento de peticiones en tiempo real, sin requerir comunicación síncrona con el Portal para autenticar, autorizar o enrutar peticiones individuales.
+7. WHEN el plano de control se recupera tras una caída, THE Portal SHALL reconciliar automáticamente cualquier discrepancia de configuración con el plano de datos y notificar al Administrador si se detectan inconsistencias.
