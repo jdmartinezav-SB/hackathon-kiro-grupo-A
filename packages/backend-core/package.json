@@ -1,0 +1,28 @@
+{
+  "name": "@conecta2/backend-core",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "npx ts-node --transpile-only src/index.ts",
+    "build": "tsc",
+    "test": "jest --runInBand"
+  },
+  "dependencies": {
+    "@conecta2/shared": "file:../shared",
+    "bcrypt": "^6.0.0",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/supertest": "^6.0.2",
+    "fast-check": "^3.23.0",
+    "jest": "^30.0.0",
+    "supertest": "^7.1.0",
+    "ts-jest": "^29.3.0",
+    "typescript": "^5.7.0"
+  }
+}
