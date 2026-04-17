@@ -23,8 +23,8 @@ export interface SbButtonProps {
 export const SbButton = forwardRef<HTMLElement, SbButtonProps>(
   (
     {
-      variant,
-      styleType,
+      variant = 'primary',
+      styleType = 'fill',
       size,
       disabled,
       loading,
