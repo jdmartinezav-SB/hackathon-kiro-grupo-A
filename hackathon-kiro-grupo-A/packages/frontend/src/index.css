@@ -5,6 +5,481 @@
   [data-brand="seguros-bolivar"] {
     --sb-ui-color-primary-base: #009056;
     --sb-ui-color-primary-D100: #038450;
+    --sb-ui-color-primary-D200: #026B3D;
+    --sb-ui-color-primary-L100: #33A678;
+    --sb-ui-color-primary-L200: #66BD9A;
+    --sb-ui-color-primary-L300: #99D3BB;
     --sb-ui-color-primary-L400: #F2F9F6;
+    --sb-ui-color-secondary-L100: #4DB8FF;
+    --sb-ui-color-grayscale-white: #FFFFFF;
+    --sb-ui-color-grayscale-black: #1A1A1A;
+    --sb-ui-color-grayscale-base: #9B9B9B;
+    --sb-ui-color-grayscale-D100: #757575;
+    --sb-ui-color-grayscale-D200: #4A4A4A;
+    --sb-ui-color-grayscale-L100: #B9B9B9;
+    --sb-ui-color-grayscale-L200: #E1E1E1;
+    --sb-ui-color-grayscale-L300: #F5F5F5;
+    --sb-ui-color-grayscale-L400: #FAFAFA;
+    --sb-ui-color-feedback-error-base: #D32F2F;
+    --sb-ui-color-feedback-success-base: #2E7D32;
+    --sb-ui-color-feedback-warning-base: #ED6C02;
+  }
+}
+
+/**
+ * Select Component — Seguros Bolivar UI Design System
+ * Estilos para el <select> nativo con clase sb-ui-select,
+ * siguiendo el patrón del design system.
+ *
+ * - CSS Nesting nativo con &
+ * - @layer para control de cascada
+ * - Logical Properties (RTL/LTR)
+ * - clamp() para responsive fluido
+ */
+
+@layer reset, tokens, base, variants, sizes, modifiers, states, utilities;
+
+@layer reset {
+  .sb-ui-select {
+    box-sizing: border-box;
+  }
+}
+
+@layer tokens {
+  .sb-ui-select {
+    --sb-ui-select-bg-color: var(--sb-ui-color-grayscale-white, #fff);
+    --sb-ui-select-bg-hover: var(--sb-ui-color-grayscale-L400, #fafafa);
+    --sb-ui-select-bg-active: var(--sb-ui-color-grayscale-white, #fff);
+    --sb-ui-select-bg-disabled: var(--sb-ui-color-grayscale-L300, #f5f5f5);
+    --sb-ui-select-bg-disabled-hover: var(--sb-ui-color-grayscale-L300, #f5f5f5);
+
+    --sb-ui-select-text-color: var(--sb-ui-color-grayscale-black, #1a1a1a);
+    --sb-ui-select-text-hover: var(--sb-ui-color-grayscale-black, #1a1a1a);
+    --sb-ui-select-text-active: var(--sb-ui-color-grayscale-black, #1a1a1a);
+    --sb-ui-select-text-disabled: var(--sb-ui-color-grayscale-base, #9b9b9b);
+    --sb-ui-select-text-disabled-hover: var(--sb-ui-color-grayscale-base, #9b9b9b);
+
+    --sb-ui-select-border-color: var(--sb-ui-color-grayscale-L200, #e1e1e1);
+    --sb-ui-select-border-hover: var(--sb-ui-color-grayscale-L100, #b9b9b9);
+    --sb-ui-select-border-active: var(--sb-ui-color-primary-base, #009056);
+    --sb-ui-select-border-disabled: var(--sb-ui-color-grayscale-L300, #f5f5f5);
+    --sb-ui-select-border-disabled-hover: var(--sb-ui-color-grayscale-L300, #f5f5f5);
+
+    --sb-ui-select-padding-inline: clamp(0.75rem, 0.5rem + 1vw, 1rem);
+    --sb-ui-select-padding-block: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+
+    --sb-ui-select-font-family: var(--sb-ui-typography-fontFamily, 'Roboto', sans-serif);
+    --sb-ui-select-font-size: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+    --sb-ui-select-font-weight: 400;
+    --sb-ui-select-line-height: 1.5;
+
+    --sb-ui-select-min-inline-size: clamp(120px, 20vw, 200px);
+    --sb-ui-select-min-block-size: clamp(40px, 8vw, 48px);
+
+    --sb-ui-select-border-width: 1px;
+    --sb-ui-select-border-radius: clamp(6px, 0.4rem + 0.3vw, 8px);
+
+    --sb-ui-select-transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+}
+
+@layer base {
+  .sb-ui-select {
+    display: block;
+    position: relative;
+    inline-size: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+
+    padding-inline-start: var(--sb-ui-select-padding-inline);
+    padding-inline-end: clamp(2rem, 1.5rem + 1.5vw, 2.5rem);
+    padding-block: var(--sb-ui-select-padding-block);
+
+    font-family: var(--sb-ui-select-font-family);
+    font-size: var(--sb-ui-select-font-size);
+    font-weight: var(--sb-ui-select-font-weight);
+    line-height: var(--sb-ui-select-line-height);
+
+    background-color: var(--sb-ui-select-bg-color);
+    color: var(--sb-ui-select-text-color);
+    border: var(--sb-ui-select-border-width) solid var(--sb-ui-select-border-color);
+    border-radius: var(--sb-ui-select-border-radius);
+
+    min-inline-size: var(--sb-ui-select-min-inline-size);
+    min-block-size: var(--sb-ui-select-min-block-size);
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234A4A4A' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right clamp(0.75rem, 0.5rem + 0.5vw, 1rem) center;
+    background-size: clamp(12px, 0.75rem + 0.2vw, 14px);
+
+    cursor: pointer;
+    transition: var(--sb-ui-select-transition);
+
+    &:hover:not(:disabled):not(.sb-ui-select--disabled) {
+      background-color: var(--sb-ui-select-bg-hover);
+      color: var(--sb-ui-select-text-hover);
+      border-color: var(--sb-ui-select-border-hover);
+    }
+
+    &:active:not(:disabled):not(.sb-ui-select--disabled) {
+      border-color: var(--sb-ui-select-border-active);
+    }
+
+    &:focus-visible:not(:disabled):not(.sb-ui-select--disabled) {
+      outline: 3px solid var(--sb-ui-color-secondary-L100, #4DB8FF);
+      outline-offset: 2px;
+      border-color: var(--sb-ui-select-border-active);
+    }
+
+    &:disabled,
+    &.sb-ui-select--disabled {
+      background-color: var(--sb-ui-select-bg-disabled);
+      color: var(--sb-ui-select-text-disabled);
+      border-color: var(--sb-ui-select-border-disabled);
+      cursor: not-allowed;
+      box-shadow: none;
+      outline: none;
+      opacity: 0.7;
+    }
+
+    &:disabled:hover,
+    &.sb-ui-select--disabled:hover {
+      background-color: var(
+        --sb-ui-select-bg-disabled-hover,
+        var(--sb-ui-select-bg-disabled)
+      );
+      color: var(
+        --sb-ui-select-text-disabled-hover,
+        var(--sb-ui-select-text-disabled)
+      );
+      border-color: var(
+        --sb-ui-select-border-disabled-hover,
+        var(--sb-ui-select-border-disabled)
+      );
+      cursor: not-allowed;
+      box-shadow: none;
+      outline: none;
+    }
+
+    &:disabled:focus,
+    &:disabled:focus-visible,
+    &.sb-ui-select--disabled:focus,
+    &.sb-ui-select--disabled:focus-visible {
+      outline: none;
+    }
+  }
+
+  /* Label para el select */
+  .sb-ui-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.25rem, 0.2rem + 0.2vw, 0.375rem);
+  }
+
+  .sb-ui-input-label {
+    font-family: var(--sb-ui-typography-fontFamily, 'Roboto', sans-serif);
+    font-size: clamp(0.8125rem, 0.75rem + 0.2vw, 0.875rem);
+    font-weight: 500;
+    color: var(--sb-ui-color-grayscale-D200, #4A4A4A);
+    line-height: 1.4;
+  }
+
+  .sb-ui-input-helper {
+    font-family: var(--sb-ui-typography-fontFamily, 'Roboto', sans-serif);
+    font-size: clamp(0.6875rem, 0.65rem + 0.15vw, 0.75rem);
+    color: var(--sb-ui-color-grayscale-D100, #757575);
+    line-height: 1.3;
+  }
+}
+
+@layer states {
+  .sb-ui-select--error {
+    --sb-ui-select-border-color: var(--sb-ui-color-feedback-error-base, #D32F2F);
+    --sb-ui-select-border-hover: var(--sb-ui-color-feedback-error-base, #D32F2F);
+    --sb-ui-select-border-active: var(--sb-ui-color-feedback-error-base, #D32F2F);
+  }
+
+  .sb-ui-select--error ~ .sb-ui-input-helper {
+    color: var(--sb-ui-color-feedback-error-base, #D32F2F);
+  }
+}
+
+@layer utilities {
+  @media (prefers-contrast: high) {
+    .sb-ui-select {
+      --sb-ui-select-border-width: 2px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sb-ui-select {
+      --sb-ui-select-transition: none;
+    }
+  }
+}
+
+
+/**
+ * Button Component — Seguros Bolivar UI Design System
+ * Estilos para <sb-ui-button> con variante Fill como estilo principal.
+ * Estos estilos complementan/refuerzan los del CDN para garantizar
+ * consistencia visual incluso si el CDN tarda en cargar.
+ *
+ * - CSS Nesting nativo con &
+ * - @layer para control de cascada
+ * - Logical Properties (RTL/LTR)
+ * - clamp() para responsive fluido
+ */
+
+@layer tokens {
+  sb-ui-button {
+    --sb-ui-button-font-family: var(--sb-ui-typography-fontFamily, 'Roboto', sans-serif);
+    --sb-ui-button-font-size: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+    --sb-ui-button-font-weight: 600;
+    --sb-ui-button-line-height: 1.2;
+    --sb-ui-button-padding-inline: clamp(1rem, 0.75rem + 1.5vw, 1.5rem);
+    --sb-ui-button-padding-block: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+    --sb-ui-button-border-radius: clamp(6px, 0.4rem + 0.3vw, 8px);
+    --sb-ui-button-gap: clamp(0.375rem, 0.3rem + 0.3vw, 0.5rem);
+    --sb-ui-button-min-block-size: clamp(40px, 8vw, 48px);
+    --sb-ui-button-transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.1s ease;
+  }
+}
+
+@layer base {
+  sb-ui-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sb-ui-button-gap);
+    position: relative;
+
+    padding-inline: var(--sb-ui-button-padding-inline);
+    padding-block: var(--sb-ui-button-padding-block);
+
+    font-family: var(--sb-ui-button-font-family);
+    font-size: var(--sb-ui-button-font-size);
+    font-weight: var(--sb-ui-button-font-weight);
+    line-height: var(--sb-ui-button-line-height);
+    text-decoration: none;
+
+    border-radius: var(--sb-ui-button-border-radius);
+    min-block-size: var(--sb-ui-button-min-block-size);
+
+    cursor: pointer;
+    transition: var(--sb-ui-button-transition);
+
+    &:focus-visible:not([disabled]) {
+      outline: 3px solid var(--sb-ui-color-secondary-L100, #4DB8FF);
+      outline-offset: 2px;
+    }
+
+    &[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  }
+}
+
+@layer variants {
+  /* Primary + Fill (variante principal) */
+  sb-ui-button[variant="primary"][style-type="fill"] {
+    background-color: var(--sb-ui-color-primary-base, #009056);
+    color: var(--sb-ui-color-grayscale-white, #fff);
+    border: 2px solid var(--sb-ui-color-primary-base, #009056);
+
+    &:hover:not([disabled]) {
+      background-color: var(--sb-ui-color-primary-D100, #038450);
+      border-color: var(--sb-ui-color-primary-D100, #038450);
+    }
+
+    &:active:not([disabled]) {
+      background-color: var(--sb-ui-color-primary-D200, #026B3D);
+      border-color: var(--sb-ui-color-primary-D200, #026B3D);
+      transform: scale(0.98);
+    }
+  }
+
+  /* Primary + Stroke */
+  sb-ui-button[variant="primary"][style-type="stroke"] {
+    background-color: transparent;
+    color: var(--sb-ui-color-primary-base, #009056);
+    border: 2px solid var(--sb-ui-color-primary-base, #009056);
+
+    &:hover:not([disabled]) {
+      background-color: var(--sb-ui-color-primary-L400, #F2F9F6);
+      color: var(--sb-ui-color-primary-D100, #038450);
+      border-color: var(--sb-ui-color-primary-D100, #038450);
+    }
+
+    &:active:not([disabled]) {
+      background-color: var(--sb-ui-color-primary-L300, #99D3BB);
+      transform: scale(0.98);
+    }
+  }
+
+  /* Primary + Text */
+  sb-ui-button[variant="primary"][style-type="text"] {
+    background-color: transparent;
+    color: var(--sb-ui-color-primary-base, #009056);
+    border: 2px solid transparent;
+
+    &:hover:not([disabled]) {
+      background-color: var(--sb-ui-color-primary-L400, #F2F9F6);
+      color: var(--sb-ui-color-primary-D100, #038450);
+    }
+
+    &:active:not([disabled]) {
+      background-color: var(--sb-ui-color-primary-L300, #99D3BB);
+    }
+  }
+
+  /* Secondary + Stroke */
+  sb-ui-button[variant="secondary"][style-type="stroke"] {
+    background-color: transparent;
+    color: var(--sb-ui-color-grayscale-D200, #4A4A4A);
+    border: 2px solid var(--sb-ui-color-grayscale-L200, #E1E1E1);
+
+    &:hover:not([disabled]) {
+      background-color: var(--sb-ui-color-grayscale-L400, #FAFAFA);
+      border-color: var(--sb-ui-color-grayscale-L100, #B9B9B9);
+    }
+
+    &:active:not([disabled]) {
+      background-color: var(--sb-ui-color-grayscale-L300, #F5F5F5);
+      transform: scale(0.98);
+    }
+  }
+
+  /* Secondary + Text */
+  sb-ui-button[variant="secondary"][style-type="text"] {
+    background-color: transparent;
+    color: var(--sb-ui-color-grayscale-D200, #4A4A4A);
+    border: 2px solid transparent;
+
+    &:hover:not([disabled]) {
+      background-color: var(--sb-ui-color-grayscale-L400, #FAFAFA);
+    }
+
+    &:active:not([disabled]) {
+      background-color: var(--sb-ui-color-grayscale-L300, #F5F5F5);
+    }
+  }
+
+  /* Secondary + Fill */
+  sb-ui-button[variant="secondary"][style-type="fill"] {
+    background-color: var(--sb-ui-color-grayscale-L300, #F5F5F5);
+    color: var(--sb-ui-color-grayscale-D200, #4A4A4A);
+    border: 2px solid var(--sb-ui-color-grayscale-L300, #F5F5F5);
+
+    &:hover:not([disabled]) {
+      background-color: var(--sb-ui-color-grayscale-L200, #E1E1E1);
+      border-color: var(--sb-ui-color-grayscale-L200, #E1E1E1);
+    }
+
+    &:active:not([disabled]) {
+      background-color: var(--sb-ui-color-grayscale-L100, #B9B9B9);
+      transform: scale(0.98);
+    }
+  }
+
+  /* Tertiary + Text */
+  sb-ui-button[variant="tertiary"][style-type="text"] {
+    background-color: transparent;
+    color: var(--sb-ui-color-grayscale-D100, #757575);
+    border: 2px solid transparent;
+
+    &:hover:not([disabled]) {
+      color: var(--sb-ui-color-grayscale-D200, #4A4A4A);
+      background-color: var(--sb-ui-color-grayscale-L400, #FAFAFA);
+    }
+  }
+
+  /* Error + Fill */
+  sb-ui-button[variant="error"][style-type="fill"] {
+    background-color: var(--sb-ui-color-feedback-error-base, #D32F2F);
+    color: var(--sb-ui-color-grayscale-white, #fff);
+    border: 2px solid var(--sb-ui-color-feedback-error-base, #D32F2F);
+
+    &:hover:not([disabled]) {
+      background-color: #B71C1C;
+      border-color: #B71C1C;
+    }
+
+    &:active:not([disabled]) {
+      background-color: #9A0007;
+      transform: scale(0.98);
+    }
+  }
+
+  /* Error + Text */
+  sb-ui-button[variant="error"][style-type="text"] {
+    background-color: transparent;
+    color: var(--sb-ui-color-feedback-error-base, #D32F2F);
+    border: 2px solid transparent;
+
+    &:hover:not([disabled]) {
+      background-color: #FFEBEE;
+    }
+  }
+
+  /* Error + Stroke */
+  sb-ui-button[variant="error"][style-type="stroke"] {
+    background-color: transparent;
+    color: var(--sb-ui-color-feedback-error-base, #D32F2F);
+    border: 2px solid var(--sb-ui-color-feedback-error-base, #D32F2F);
+
+    &:hover:not([disabled]) {
+      background-color: #FFEBEE;
+    }
+  }
+}
+
+@layer sizes {
+  sb-ui-button[size="small"] {
+    --sb-ui-button-font-size: clamp(0.75rem, 0.7rem + 0.2vw, 0.8125rem);
+    --sb-ui-button-padding-inline: clamp(0.625rem, 0.5rem + 0.5vw, 0.875rem);
+    --sb-ui-button-padding-block: clamp(0.25rem, 0.2rem + 0.2vw, 0.375rem);
+    --sb-ui-button-min-block-size: clamp(32px, 6vw, 36px);
+  }
+
+  sb-ui-button[size="large"] {
+    --sb-ui-button-font-size: clamp(1rem, 0.9rem + 0.4vw, 1.125rem);
+    --sb-ui-button-padding-inline: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    --sb-ui-button-padding-block: clamp(0.625rem, 0.5rem + 0.5vw, 1rem);
+    --sb-ui-button-min-block-size: clamp(48px, 10vw, 56px);
+  }
+}
+
+@layer states {
+  sb-ui-button[loading] {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+}
+
+@layer utilities {
+  @media (prefers-contrast: high) {
+    sb-ui-button {
+      border-inline-size: 2px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    sb-ui-button {
+      --sb-ui-button-transition: none;
+      animation: none;
+    }
   }
 }
