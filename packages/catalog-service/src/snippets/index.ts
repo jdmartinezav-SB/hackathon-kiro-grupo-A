@@ -1,0 +1,1 @@
+export { generateSnippet } from './generator';

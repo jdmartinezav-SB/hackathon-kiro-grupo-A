@@ -205,7 +205,7 @@
 
 ## Fase Final — Integración (Últimos 30 min — Todos juntos)
 
-- [ ] 6.1 Levantar todos los servicios con Docker Compose y verificar conectividad
+- [~] 6.1 Levantar todos los servicios con Docker Compose y verificar conectividad
 - [ ] 6.2 Ejecutar migraciones completas y seed data
 - [ ] 6.3 Verificar flujo completo: registro → login → ver catálogo → ejecutar sandbox → ver analytics → admin gestiona aliado
 - [ ] 6.4 Corregir errores de integración entre módulos (CORS, rutas, contratos)
