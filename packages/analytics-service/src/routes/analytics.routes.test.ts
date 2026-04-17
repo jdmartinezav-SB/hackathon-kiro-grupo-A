@@ -1,12 +1,12 @@
 import request from 'supertest';
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import { correlationIdMiddleware } from '../middleware/correlation-id.js';
-import { errorHandler } from '../middleware/error-handler.js';
-import analyticsRoutes from './analytics.routes.js';
-import pool from '../config/database.js';
+import { correlationIdMiddleware } from '../middleware/correlation-id';
+import { errorHandler } from '../middleware/error-handler';
+import analyticsRoutes from './analytics.routes';
+import pool from '../config/database';
 
-jest.mock('../config/database.js', () => ({
+jest.mock('../config/database', () => ({
   __esModule: true,
   default: { query: jest.fn() },
 }));

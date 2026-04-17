@@ -1,70 +1,38 @@
 import { Request, Response, NextFunction } from 'express';
 
-interface ErrorResponse {
-  error: {
-    code: string;
-    message: string;
-    details?: unknown;
-    correlationId: string;
-  };
-  statusCode: number;
-}
-
-/**
- * Custom application error that carries an HTTP status code and
- * an internal error code for structured error responses.
- */
-class AppError extends Error {
-  public readonly statusCode: number;
-  public readonly code: string;
-  public readonly details?: unknown;
-
-  constructor(statusCode: number, code: string, message: string, details?: unknown) {
+export class AppError extends Error {
+  constructor(
+    public statusCode: number,
+    public code: string,
+    message: string,
+    public details?: unknown
+  ) {
     super(message);
-    this.statusCode = statusCode;
-    this.code = code;
-    this.details = details;
-    Object.setPrototypeOf(this, AppError.prototype);
+    this.name = 'AppError';
   }
 }
 
-/**
- * Centralized error handler — must be registered as the LAST middleware.
- * Produces a uniform JSON error envelope with correlationId for traceability.
- */
-function errorHandler(
-  err: Error,
-  req: Request,
-  res: Response,
-  _next: NextFunction,
-): void {
-  const correlationId = req.correlationId ?? 'unknown';
-
-  const statusCode = err instanceof AppError ? err.statusCode : 500;
-  const code = err instanceof AppError ? err.code : 'INTERNAL_ERROR';
-  const message =
-    err instanceof AppError ? err.message : 'An unexpected error occurred';
-  const details = err instanceof AppError ? err.details : undefined;
-
-  const body: ErrorResponse = {
-    error: { code, message, details, correlationId },
-    statusCode,
+export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction): void {
+  const correlationId = req.correlationId || 'unknown';
+  const log = {
+    timestamp: new Date().toISOString(),
+    level: 'error',
+    correlationId,
+    message: err.message,
+    stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined,
   };
+  console.error(JSON.stringify(log));
 
-  if (statusCode >= 500) {
-    const log = {
-      timestamp: new Date().toISOString(),
-      level: 'error',
-      service: process.env.SERVICE_NAME ?? 'unknown',
-      correlationId,
-      message: err.message,
-      stack: err.stack,
-    };
-    process.stdout.write(JSON.stringify(log) + '\n');
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({
+      error: { code: err.code, message: err.message, details: err.details, correlationId },
+      statusCode: err.statusCode,
+    });
+    return;
   }
 
-  res.status(statusCode).json(body);
+  res.status(500).json({
+    error: { code: 'INTERNAL_SERVER_ERROR', message: 'An unexpected error occurred', correlationId },
+    statusCode: 500,
+  });
 }
-
-export { errorHandler, AppError };
-export type { ErrorResponse };

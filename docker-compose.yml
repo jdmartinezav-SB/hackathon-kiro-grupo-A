@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: conecta2-postgres
+    environment:
+      POSTGRES_DB: conecta2
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./packages/shared/migrations:/docker-entrypoint-initdb.d/migrations
+      - ./init-db.sh:/docker-entrypoint-initdb.d/99-init-db.sh
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d conecta2']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: conecta2-redis
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

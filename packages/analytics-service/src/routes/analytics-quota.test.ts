@@ -4,14 +4,14 @@ import jwt from 'jsonwebtoken';
 
 // Mock pg pool before importing routes
 const mockQuery = jest.fn();
-jest.mock('../config/database.js', () => ({
+jest.mock('../config/database', () => ({
   __esModule: true,
   default: { query: mockQuery },
 }));
 
-import analyticsRoutes from './analytics.routes.js';
-import { correlationIdMiddleware } from '../middleware/correlation-id.js';
-import { errorHandler } from '../middleware/error-handler.js';
+import analyticsRoutes from './analytics.routes';
+import { correlationIdMiddleware } from '../middleware/correlation-id';
+import { errorHandler } from '../middleware/error-handler';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default-secret';
 

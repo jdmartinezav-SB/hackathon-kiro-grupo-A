@@ -1,48 +1,37 @@
--- ============================================================
 -- Migration 001: Create consumer table
--- Database: PostgreSQL 15+
--- Description: Stores registered API consumers (aliados/intermediarios)
 -- Owner: Dev 1 — Backend Core + Auth
--- ============================================================
 
--- Enable pgcrypto for gen_random_uuid() if not already enabled
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
--- Enum types for consumer
 DO $$ BEGIN
-    CREATE TYPE business_profile_enum AS ENUM ('salud', 'autos', 'vida', 'hogar', 'general');
+  CREATE TYPE business_profile AS ENUM ('insurtech', 'broker', 'enterprise', 'startup');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 DO $$ BEGIN
-    CREATE TYPE consumer_status_enum AS ENUM ('pending', 'active', 'suspended', 'revoked');
+  CREATE TYPE consumer_status AS ENUM ('active', 'suspended', 'revoked');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE consumer_role AS ENUM ('consumer', 'admin');
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 CREATE TABLE IF NOT EXISTS consumer (
-    id                UUID                  PRIMARY KEY DEFAULT gen_random_uuid(),
-    email             TEXT                  NOT NULL,
-    password_hash     TEXT                  NOT NULL,
-    company_name      TEXT                  NOT NULL,
-    contact_name      TEXT                  NOT NULL,
-    phone             TEXT,
-    business_profile  business_profile_enum NOT NULL,
-    status            consumer_status_enum  NOT NULL DEFAULT 'pending',
-    email_verified    BOOLEAN               NOT NULL DEFAULT FALSE,
-    plan_id           UUID,
-    created_at        TIMESTAMPTZ           NOT NULL DEFAULT NOW(),
-    updated_at        TIMESTAMPTZ           NOT NULL DEFAULT NOW(),
-    last_activity_at  TIMESTAMPTZ
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email             VARCHAR(255) UNIQUE NOT NULL,
+  password_hash     VARCHAR(255) NOT NULL,
+  company_name      VARCHAR(255) NOT NULL,
+  contact_name      VARCHAR(255) NOT NULL,
+  phone             VARCHAR(50),
+  business_profile  business_profile NOT NULL DEFAULT 'enterprise',
+  status            consumer_status NOT NULL DEFAULT 'active',
+  role              consumer_role NOT NULL DEFAULT 'consumer',
+  email_verified    BOOLEAN NOT NULL DEFAULT FALSE,
+  subscription_plan_id UUID,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_activity_at  TIMESTAMPTZ
 );
 
--- Unique constraint on email
-DO $$ BEGIN
-    ALTER TABLE consumer ADD CONSTRAINT consumer_email_uk UNIQUE (email);
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
--- Indexes for commonly queried columns
-CREATE INDEX IF NOT EXISTS idx_consumer_email           ON consumer (email);
-CREATE INDEX IF NOT EXISTS idx_consumer_status          ON consumer (status);
-CREATE INDEX IF NOT EXISTS idx_consumer_business_profile ON consumer (business_profile);
-CREATE INDEX IF NOT EXISTS idx_consumer_plan_id         ON consumer (plan_id);
+CREATE INDEX IF NOT EXISTS idx_consumer_email ON consumer(email);
+CREATE INDEX IF NOT EXISTS idx_consumer_status ON consumer(status);

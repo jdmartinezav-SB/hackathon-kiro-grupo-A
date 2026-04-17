@@ -1,126 +1,117 @@
-import { ParsedEndpoint } from '../parser/types';
+const BASE_URL = 'https://api.conecta2.bolivar.com';
 
-type SnippetLanguage = 'javascript' | 'python' | 'java' | 'curl';
-
-const METHODS_WITH_BODY = ['POST', 'PUT', 'PATCH'];
-
-/**
- * Generate a code snippet for a given endpoint in the specified language.
- */
 export function generateSnippet(
-  endpoint: ParsedEndpoint,
-  baseUrl: string,
-  lang: SnippetLanguage,
+  lang: string,
+  method: string,
+  path: string,
+  body?: object
 ): string {
-  const method = endpoint.method.toUpperCase();
-  const url = `${baseUrl}${endpoint.path}`;
-  const hasBody = METHODS_WITH_BODY.includes(method);
+  const url = `${BASE_URL}${path}`;
+  const upperMethod = method.toUpperCase();
+  const bodyJson = body ? JSON.stringify(body, null, 2) : undefined;
+  const bodyJsonInline = body ? JSON.stringify(body) : undefined;
 
   switch (lang) {
     case 'curl':
-      return generateCurl(method, url, hasBody);
+      return generateCurl(upperMethod, url, bodyJsonInline);
     case 'javascript':
-      return generateJavaScript(method, url, hasBody);
+      return generateJavaScript(upperMethod, url, bodyJson);
     case 'python':
-      return generatePython(method, url, hasBody);
+      return generatePython(upperMethod, url, bodyJson);
     case 'java':
-      return generateJava(method, url, hasBody);
+      return generateJava(upperMethod, url, bodyJsonInline);
+    default:
+      return `// Language "${lang}" is not supported`;
   }
 }
 
-function generateCurl(method: string, url: string, hasBody: boolean): string {
+function generateCurl(method: string, url: string, body?: string): string {
   const lines = [
     `curl -X ${method} '${url}' \\`,
     `  -H 'Content-Type: application/json' \\`,
-    `  -H 'Authorization: Bearer <YOUR_TOKEN>'`,
+    `  -H 'Authorization: Bearer YOUR_TOKEN'`,
   ];
 
-  if (hasBody) {
+  if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
     lines[lines.length - 1] += ' \\';
-    lines.push(`  -d '{"key": "value"}'`);
+    lines.push(`  -d '${body}'`);
   }
 
   return lines.join('\n');
 }
 
-function generateJavaScript(method: string, url: string, hasBody: boolean): string {
-  const lines: string[] = [];
-  lines.push(`const response = await fetch('${url}', {`);
-  lines.push(`  method: '${method}',`);
-  lines.push(`  headers: {`);
-  lines.push(`    'Content-Type': 'application/json',`);
-  lines.push(`    'Authorization': 'Bearer <YOUR_TOKEN>',`);
-  lines.push(`  },`);
+function generateJavaScript(
+  method: string,
+  url: string,
+  body?: string
+): string {
+  const options = [
+    `  method: '${method}',`,
+    `  headers: {`,
+    `    'Content-Type': 'application/json',`,
+    `    'Authorization': 'Bearer YOUR_TOKEN'`,
+    `  }`,
+  ];
 
-  if (hasBody) {
-    lines.push(`  body: JSON.stringify({ key: 'value' }),`);
+  if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+    options.push(`  body: JSON.stringify(${body})`);
   }
 
-  lines.push(`});`);
-  lines.push(``);
-  lines.push(`const data = await response.json();`);
-  lines.push(`console.log(data);`);
-
-  return lines.join('\n');
+  return [
+    `const response = await fetch('${url}', {`,
+    ...options,
+    `});`,
+    `const data = await response.json();`,
+  ].join('\n');
 }
 
-function generatePython(method: string, url: string, hasBody: boolean): string {
-  const lines: string[] = [];
-  lines.push(`import requests`);
-  lines.push(``);
-  lines.push(`headers = {`);
-  lines.push(`    'Content-Type': 'application/json',`);
-  lines.push(`    'Authorization': 'Bearer <YOUR_TOKEN>',`);
-  lines.push(`}`);
-  lines.push(``);
+function generatePython(method: string, url: string, body?: string): string {
+  const pyMethod = method.toLowerCase();
+  const lines = ['import requests', ''];
 
-  if (hasBody) {
-    lines.push(`payload = {'key': 'value'}`);
-    lines.push(``);
-    lines.push(`response = requests.${method.toLowerCase()}('${url}', headers=headers, json=payload)`);
+  if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+    lines.push(
+      `response = requests.${pyMethod}(`,
+      `    '${url}',`,
+      `    headers={'Authorization': 'Bearer YOUR_TOKEN'},`,
+      `    json=${body}`,
+      `)`,
+    );
   } else {
-    lines.push(`response = requests.${method.toLowerCase()}('${url}', headers=headers)`);
+    lines.push(
+      `response = requests.${pyMethod}(`,
+      `    '${url}',`,
+      `    headers={'Authorization': 'Bearer YOUR_TOKEN'}`,
+      `)`,
+    );
   }
 
-  lines.push(``);
-  lines.push(`print(response.status_code)`);
-  lines.push(`print(response.json())`);
-
+  lines.push(`data = response.json()`);
   return lines.join('\n');
 }
 
-function generateJava(method: string, url: string, hasBody: boolean): string {
-  const lines: string[] = [];
-  lines.push(`import java.net.URI;`);
-  lines.push(`import java.net.http.HttpClient;`);
-  lines.push(`import java.net.http.HttpRequest;`);
-  lines.push(`import java.net.http.HttpResponse;`);
-  lines.push(``);
-  lines.push(`HttpClient client = HttpClient.newHttpClient();`);
-  lines.push(``);
+function generateJava(method: string, url: string, body?: string): string {
+  const lines = [
+    `HttpClient client = HttpClient.newHttpClient();`,
+    `HttpRequest request = HttpRequest.newBuilder()`,
+    `    .uri(URI.create("${url}"))`,
+    `    .header("Content-Type", "application/json")`,
+    `    .header("Authorization", "Bearer YOUR_TOKEN")`,
+  ];
 
-  if (hasBody) {
-    lines.push(`String body = "{\\\"key\\\": \\\"value\\\"}";`);
-    lines.push(``);
-    lines.push(`HttpRequest request = HttpRequest.newBuilder()`);
-    lines.push(`    .uri(URI.create("${url}"))`);
-    lines.push(`    .header("Content-Type", "application/json")`);
-    lines.push(`    .header("Authorization", "Bearer <YOUR_TOKEN>")`);
-    lines.push(`    .method("${method}", HttpRequest.BodyPublishers.ofString(body))`);
-    lines.push(`    .build();`);
+  if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+    const escaped = body.replace(/"/g, '\\"');
+    lines.push(
+      `    .${method}(HttpRequest.BodyPublishers.ofString("${escaped}"))`,
+    );
   } else {
-    lines.push(`HttpRequest request = HttpRequest.newBuilder()`);
-    lines.push(`    .uri(URI.create("${url}"))`);
-    lines.push(`    .header("Content-Type", "application/json")`);
-    lines.push(`    .header("Authorization", "Bearer <YOUR_TOKEN>")`);
-    lines.push(`    .method("${method}", HttpRequest.BodyPublishers.noBody())`);
-    lines.push(`    .build();`);
+    lines.push(`    .${method}()`);
   }
 
-  lines.push(``);
-  lines.push(`HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());`);
-  lines.push(`System.out.println(response.statusCode());`);
-  lines.push(`System.out.println(response.body());`);
+  lines.push(
+    `    .build();`,
+    `HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());`,
+  );
 
   return lines.join('\n');
 }
